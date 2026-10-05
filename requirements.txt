@@ -1,0 +1,17 @@
+# Fraud Detection
+
+Fraud Detection with Cost-Sensitive Learning & Drift Monitoring.
+
+## Project Components
+
+- Fraud transaction analysis and EDA
+- Business cost analysis
+- Threshold optimization
+- Cost-sensitive machine learning
+- Model evaluation
+- Transaction stream simulation
+- Data drift monitoring
+
+## Dataset
+
+The dataset is not included in this repository.
