@@ -34,41 +34,33 @@ Estimated FN Cost = Sum of the transaction amounts of all false negatives.
 
 ## 4. Currency and Units
 
-The dataset contains an `Amount` column, but its currency must be verified before its values are treated as US dollars.
+According to the Kaggle dataset description, the `Amount` column represents transaction amounts in **US dollars (USD)**.
 
-The FP cost is provisionally expressed in USD. The FN estimate will remain in the dataset's amount units until the currency and compatibility of the units are confirmed.
+The false-positive cost is provisionally assumed to be $2 per transaction. The false-negative cost is estimated using the full transaction amount of each missed fraudulent transaction.
 
-The FP and FN costs must use compatible units before they are combined into a single total monetary cost.
-
-## 5. Other Cost Components
-
-For the initial analysis, only the following components are included:
-
-- FP cost: estimated operational cost of reviewing false alarms.
-- FN cost: estimated potential loss from missed fraudulent transactions.
-
-Other possible costs, such as customer inconvenience, dispute handling, and fraud recovery expenses, are excluded because reliable values are not currently available.
+Both cost components are therefore expressed in USD and can be combined to calculate the estimated total cost.
 
 ## 6. Total Cost Evaluation
 
-Once the currency and units are confirmed, the total estimated cost can be calculated as:
+The total estimated cost is calculated as:
 
-Total Estimated Cost = Total FP Cost + Total FN Cost
+**Total Estimated Cost = Total FP Cost + Total FN Cost**
 
 Where:
 
-Total FP Cost = Number of False Positives × Assumed FP Cost per Transaction
+- **Total FP Cost** = Number of False Positives × Assumed FP Cost per Transaction
+- **Total FN Cost** = Sum of the transaction amounts of all False Negatives
 
-Total FN Cost = Sum of the estimated losses for all False Negatives
+The calculations can be repeated at different classification thresholds to compare the estimated business cost of different model decisions.
 
-These calculations can be repeated at different classification thresholds to compare the estimated business cost of different model decisions.
+The resulting total is expressed in USD. It is an estimate based on the project's provisional cost assumptions, not a measurement of actual bank losses or operating expenses.
 
 ## 7. Limitations
 
-- The FP cost is an illustrative assumption and has not been validated using actual business data.
-- The FN cost uses transaction amounts as a proxy for potential loss.
-- Actual fraud losses and recovery amounts are unavailable.
-- The dataset currency must be verified before combining the FP and FN estimates.
+- The FP cost of $2 per transaction is an illustrative assumption and has not been validated using actual business data.
+- The FN cost uses transaction amounts as a proxy for potential fraud loss.
+- Actual fraud losses, recoveries, and refunds are unavailable.
+- The estimated total cost does not include other expenses, such as customer inconvenience, dispute handling, or fraud recovery.
 - The assumptions may be updated after team review or when reliable business information becomes available.
 
 ## 8. Review Status
