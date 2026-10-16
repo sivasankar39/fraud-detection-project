@@ -1,0 +1,444 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #090a0c;
+    --panel: #151619;
+    --border: #292a30;
+    --text: #f4f4f5;
+    --muted: #a3a3aa;
+    --red: #ed2338;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 260px;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 28px 18px;
+    background: linear-gradient(180deg, #171012, #09090b);
+    border-right: 1px solid #292024;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.sidebar h1 {
+    font-size: 24px;
+    white-space: nowrap;
+}
+
+.sidebar h1 span,
+.brand-note span {
+    color: var(--red);
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    margin: 12px 0 35px;
+}
+
+nav {
+    display: grid;
+    gap: 8px;
+}
+
+nav a {
+    display: block;
+    padding: 15px 13px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #d1d1d5;
+    font-size: 14px;
+    transition: background .2s;
+}
+
+nav a:hover,
+nav a.active {
+    color: white;
+    background: linear-gradient(90deg, #e51f35, #4b1019);
+}
+
+.dataset-info {
+    margin-top: auto;
+    border-top: 1px solid #333036;
+    padding-top: 22px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 2;
+}
+
+.dataset-info h3 {
+    color: white;
+    margin-bottom: 8px;
+}
+
+/* MAIN CONTENT — shared by both pages */
+.main-content {
+    display: block;
+    width: auto;
+    min-width: 0;
+    margin-left: 260px;
+    padding: 30px;
+}
+
+/* HEADERS */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 4px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.page-header h1,
+.page-header h2 {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.page-header p,
+.chart-card>p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.brand-note {
+    text-align: right;
+    font-size: 13px;
+}
+
+.brand-note small {
+    display: block;
+    color: var(--muted);
+    margin-top: 8px;
+}
+
+.back-link {
+    color: #ff4054;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* OVERVIEW KPI GRID */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 16px;
+}
+
+/* ANALYTICS KPI GRID */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* SHARED CARDS */
+.card,
+.stat-card,
+.chart-card {
+    background: linear-gradient(145deg, #17181b, #101113);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    min-width: 0;
+}
+
+.kpi {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    min-height: 130px;
+}
+
+.kpi-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 45px;
+    height: 45px;
+    border: 1px solid #33343a;
+    border-radius: 50%;
+    font-size: 24px;
+}
+
+.kpi p,
+.stat-card p {
+    color: #c4c4cb;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.kpi h2 {
+    font-size: clamp(19px, 1.7vw, 27px);
+    margin-bottom: 10px;
+    overflow-wrap: anywhere;
+}
+
+.stat-card h2 {
+    font-size: 27px;
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
+.kpi small,
+.stat-card small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.red {
+    color: var(--red) !important;
+}
+
+/* CHART LAYOUTS */
+.chart-grid,
+.bottom-grid,
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.chart-card {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.chart-card h3,
+.findings h3 {
+    font-size: 17px;
+    margin-bottom: 9px;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    margin-top: 18px;
+}
+
+.time-chart-container {
+    height: 300px;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+}
+
+.chart-placeholder {
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+    margin-top: 15px;
+    color: #777982;
+    border: 1px dashed #36373d;
+    border-radius: 8px;
+    text-align: center;
+    padding: 20px;
+}
+
+/* KEY FINDINGS */
+.findings {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+}
+
+.finding {
+    display: flex;
+    gap: 13px;
+    align-items: flex-start;
+    background: #1b1c20;
+    border: 1px solid #292a30;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.finding b {
+    background: var(--red);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.finding strong {
+    font-size: 13px;
+    color: var(--text);
+}
+
+.finding p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+    margin-top: 5px;
+}
+
+/* FRAUD TRANSACTIONS TABLE */
+.fraud-table-section {
+    display: block;
+    width: 100%;
+    margin: 20px 0;
+    clear: both;
+}
+
+.fraud-table-section h3 {
+    margin-bottom: 10px;
+}
+
+.fraud-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.fraud-filters input {
+    flex: 1 1 150px;
+    min-width: 0;
+    padding: 12px;
+    color: var(--text);
+    background: #202126;
+    border: 1px solid #393a42;
+    border-radius: 8px;
+}
+
+.fraud-filters input:focus {
+    outline: 1px solid var(--red);
+    border-color: var(--red);
+}
+
+.table-wrapper {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+}
+
+#fraudTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+#fraudTable th,
+#fraudTable td {
+    padding: 14px;
+    border-bottom: 1px solid #2c2d33;
+    white-space: nowrap;
+}
+
+#fraudTable th {
+    color: #b9bac2;
+    background: #1b1c20;
+}
+
+.fraud-badge {
+    color: #ff4054;
+    background: rgba(237, 35, 56, 0.12);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+#fraudResultCount {
+    color: var(--muted);
+    margin-top: 14px;
+    font-size: 13px;
+}
+
+/* FOOTER */
+.page-footer,
+footer {
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    .main-content {
+        padding: 22px;
+    }
+
+    .kpi-grid,
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+        padding: 18px;
+    }
+
+    .chart-grid,
+    .bottom-grid,
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+
+    .main-content {
+        width: 100%;
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .page-header h1,
+    .page-header h2 {
+        font-size: 29px;
+    }
+
+    .brand-note {
+        display: none;
+    }
+
+    .kpi-grid,
+    .stats-grid,
+    .chart-grid,
+    .bottom-grid,
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}

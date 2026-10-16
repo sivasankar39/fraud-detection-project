@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0c0e">
+    <title>Fraud Analytics | FraudGuard AI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h1>🛡 Fraud<span>Guard</span> AI</h1>
+        <p class="subtitle">Cost-Sensitive Fraud Detection</p>
+
+        <nav>
+            <a href="/">⌂ Overview</a>
+            <a href="{{ url_for('analytics') }}" class="active">▥ Fraud Analytics</a>
+            <a href="/#cost-optimizer">◎ Cost Optimizer</a>
+            <a href="/#pr-explorer">◉ PR Explorer</a>
+            <a href="/#simulator">▷ Live Simulator</a>
+            <a href="/#investigation">▤ Investigation Queue</a>
+            <a href="/#drift">⌁ Drift Monitor</a>
+        </nav>
+
+        <div class="dataset-info">
+            <h3>Dataset Info</h3>
+            <p>Credit Card Transactions</p>
+            <p>{{ "{:,}".format(stats.total) }} transactions</p>
+            <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
+            <p>{{ stats.fraud_rate }}% fraud rate</p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- PAGE HEADER -->
+        <header class="page-header">
+            <div>
+                <h1>Fraud Analytics</h1>
+                <p>Explore fraudulent and legitimate transaction patterns.</p>
+            </div>
+
+            <a href="/" class="back-link">← Back to Overview</a>
+        </header>
+
+        <!-- KPI CARDS -->
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <p>Total Transactions</p>
+                <h2>{{ "{:,}".format(stats.total) }}</h2>
+            </article>
+
+            <article class="stat-card">
+                <p>Fraudulent Transactions</p>
+                <h2 style="color:#ed2338;">
+                    {{ "{:,}".format(stats.fraud) }}
+                </h2>
+                <small>{{ stats.fraud_rate }}% of all transactions</small>
+            </article>
+
+            <article class="stat-card">
+                <p>Legitimate Transactions</p>
+                <h2>{{ "{:,}".format(stats.legitimate) }}</h2>
+            </article>
+
+            <article class="stat-card">
+                <p>Fraud Detection Ratio</p>
+                <h2>{{ "%.2f"|format(stats.fraud_rate) }}%</h2>
+            </article>
+
+        </section>
+
+        <!-- CHARTS -->
+        <section class="charts-grid">
+
+            <article class="chart-card">
+                <h3>Transaction Class Distribution</h3>
+                <p>Fraudulent versus legitimate transactions</p>
+
+                <div class="chart-container">
+                    <canvas id="classChart"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <h3>Fraud by Transaction Amount</h3>
+                <p>Compare transaction counts across amount ranges</p>
+
+                <div class="chart-container">
+                    <canvas id="amountChart"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <h3>Transaction Activity Over Time</h3>
+                <p>Fraud and legitimate transactions by elapsed hour</p>
+
+                <div class="chart-container time-chart-container">
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </article>
+
+            <article class="chart-card">
+                <h3>💡 Key Findings</h3>
+
+                <div class="finding">
+                    <b>1</b>
+                    <div>
+                        <strong>Fraud Rate</strong>
+                        <p>
+                            {{ stats.fraud_rate }}% of transactions are
+                            classified as fraudulent in this dataset.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="finding">
+                    <b>2</b>
+                    <div>
+                        <strong>Class Imbalance</strong>
+                        <p>
+                            Legitimate transactions significantly outnumber
+                            fraudulent transactions.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="finding">
+                    <b>3</b>
+                    <div>
+                        <strong>Amount Analysis</strong>
+                        <p>
+                            Compare fraud and legitimate transaction counts
+                            across transaction amount ranges.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="finding">
+                    <b>4</b>
+                    <div>
+                        <strong>Investigation</strong>
+                        <p>
+                            Fraudulent transactions require further
+                            investigation before drawing conclusions.
+                        </p>
+                    </div>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- FRAUD TRANSACTIONS TABLE -->
+        <section class="chart-card fraud-table-section">
+
+            <h3>🚨 Fraud Transactions</h3>
+            <p>Search and filter transactions classified as fraudulent.</p>
+
+            <div class="fraud-filters">
+                <input type="text" id="fraudSearch" placeholder="Search transaction ID..."
+                    aria-label="Search transaction ID">
+
+                <input type="number" id="minAmount" placeholder="Min amount" min="0" step="any"
+                    aria-label="Minimum transaction amount">
+
+                <input type="number" id="maxAmount" placeholder="Max amount" min="0" step="any"
+                    aria-label="Maximum transaction amount">
+            </div>
+
+            <div class="table-wrapper">
+                <table id="fraudTable">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Elapsed Time (seconds)</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in fraud_rows %}
+                        <tr>
+                            <td>{{ row.transaction_id }}</td>
+                            <td>
+                                {{ row.time if row.time is not none else "N/A" }}
+                            </td>
+                            <td class="amount-value">
+                                {{ "%.2f"|format(row.amount) }}
+                            </td>
+                            <td>
+                                <span class="fraud-badge">Fraud</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">No fraudulent transactions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <p id="fraudResultCount">
+                Showing {{ fraud_rows|length }} fraudulent transactions
+            </p>
+
+        </section>
+
+        <footer class="page-footer">
+            FraudGuard AI · Credit Card Fraud Analytics
+        </footer>
+
+    </main>
+
+    <!-- CHART DATA -->
+    <script>
+        window.FRAUD_CHART_DATA = {{ chart_data | tojson }};
+    </script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- FRAUD TABLE FILTERS -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const search = document.getElementById("fraudSearch");
+            const minInput = document.getElementById("minAmount");
+            const maxInput = document.getElementById("maxAmount");
+            const rows = Array.from(
+                document.querySelectorAll("#fraudTable tbody tr")
+            );
+            const count = document.getElementById("fraudResultCount");
+
+            function filterFraudRows() {
+                const query = search.value.trim().toLowerCase();
+                const min = minInput.value === ""
+                    ? null : Number(minInput.value);
+                const max = maxInput.value === ""
+                    ? null : Number(maxInput.value);
+
+                let visible = 0;
+                let totalDataRows = 0;
+
+                rows.forEach(function (row) {
+                    const cells = row.querySelectorAll("td");
+
+                    if (cells.length < 4) {
+                        row.style.display = "";
+                        return;
+                    }
+
+                    totalDataRows++;
+
+                    const id = cells[0].textContent.trim().toLowerCase();
+                    const amount = Number(
+                        cells[2].textContent.replace(/,/g, "")
+                    );
+
+                    const matchesSearch = id.includes(query);
+                    const matchesMin = min === null || amount >= min;
+                    const matchesMax = max === null || amount <= max;
+
+                    const show =
+                        matchesSearch && matchesMin && matchesMax;
+
+                    row.style.display = show ? "" : "none";
+
+                    if (show) visible++;
+                });
+
+                count.textContent =
+                    "Showing " + visible + " of " +
+                    totalDataRows + " fraudulent transactions";
+            }
+
+            search.addEventListener("input", filterFraudRows);
+            minInput.addEventListener("input", filterFraudRows);
+            maxInput.addEventListener("input", filterFraudRows);
+        });
+    </script>
+
+</body>
+
+</html>
