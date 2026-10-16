@@ -1,0 +1,115 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PR Explorer | FraudGuard AI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h2>🛡 FraudGuard AI</h2>
+
+        <nav>
+            <a href="{{ url_for('overview') }}">Overview</a>
+            <a href="{{ url_for('analytics') }}">Analytics</a>
+            <a href="{{ url_for('cost_optimizer') }}">Cost Optimizer</a>
+            <a href="{{ url_for('pr_explorer') }}">PR Explorer</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="page-header">
+            <h1>Precision-Recall Explorer</h1>
+            <p>Explore how fraud detection thresholds affect precision and recall.</p>
+        </header>
+
+        <section class="chart-container">
+            <h2>What does this page show?</h2>
+
+            <p>
+                <strong>Precision:</strong>
+                Of the transactions predicted as fraud, how many were actually fraud?
+            </p>
+
+            <p>
+                <strong>Recall:</strong>
+                Of all actual fraudulent transactions, how many did the model detect?
+            </p>
+
+            <p>
+                A real Precision-Recall curve requires a trained model and its prediction
+                scores. This page will display the actual curve after model integration.
+            </p>
+
+            <p id="prStatus">
+                <strong>Status:</strong> Model integration pending.
+            </p>
+        </section>
+
+        <section class="chart-container">
+            <h2>Precision-Recall Curve</h2>
+
+            <script>
+                const prData = {{ pr_data | tojson }};
+
+                const canvas = document.getElementById("prChart");
+
+                if (prData.precision.length > 0 && prData.recall.length > 0) {
+                    new Chart(canvas, {
+                        type: "line",
+                        data: {
+                            datasets: [{
+                                label: "Precision–Recall Curve",
+                                data: prData.recall.map((recall, i) => ({
+                                    x: recall,
+                                    y: prData.precision[i]
+                                })),
+                                borderColor: "#ff3b4f",
+                                backgroundColor: "rgba(255, 59, 79, 0.15)",
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                fill: false,
+                                tension: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                x: {
+                                    type: "linear",
+                                    min: 0,
+                                    max: 1,
+                                    title: {
+                                        display: true,
+                                        text: "Recall"
+                                    }
+                                },
+                                y: {
+                                    min: 0,
+                                    max: 1,
+                                    title: {
+                                        display: true,
+                                        text: "Precision"
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    document.getElementById("prStatus").innerHTML =
+                        "<strong>Status:</strong> No PR results found. Run train_model.py first.";
+                }
+            </script>
+</body>
+
+</html>

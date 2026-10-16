@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0c0e">
+
+    <title>FraudGuard AI | Overview</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <h1>🛡 Fraud<span>Guard</span> AI</h1>
+        <p class="subtitle">Cost-Sensitive Fraud Detection</p>
+
+        <nav>
+            <a class="active" href="/">⌂ Overview</a>
+            <a href="{{ url_for('analytics') }}">▥ Fraud Analytics</a>
+            <a href="{{ url_for('cost_optimizer') }}">◎ Cost Optimizer</a>
+            <a href="/#pr-explorer">◉ PR Explorer</a>
+            <a href="/#simulator">▷ Live Simulator</a>
+            <a href="/#investigation">▤ Investigation Queue</a>
+            <a href="/#drift">⌁ Drift Monitor</a>
+        </nav>
+
+        <div class="dataset-info">
+            <h3>Dataset Info</h3>
+            <p>Credit Card Transactions</p>
+            <p>{{ "{:,}".format(stats.total) }} transactions</p>
+            <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
+            <p>{{ stats.fraud_rate }}% fraud rate</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <header class="page-header">
+            <div>
+                <h2>Overview</h2>
+                <p>Key insights from the credit card transaction data</p>
+            </div>
+
+            <div class="brand-note">
+                <strong>Fraud<span>Guard</span> AI</strong>
+                <small>Smarter Detection · Safer Transactions</small>
+            </div>
+        </header>
+
+        <!-- KPI CARDS -->
+        <section class="kpi-grid">
+
+            <article class="card kpi">
+                <span class="kpi-icon">▤</span>
+                <div>
+                    <p>Total Transactions</p>
+                    <h2>{{ "{:,}".format(stats.total) }}</h2>
+                    <small>All transactions in dataset</small>
+                </div>
+            </article>
+
+            <article class="card kpi">
+                <span class="kpi-icon red">♟</span>
+                <div>
+                    <p>Fraudulent Transactions</p>
+                    <h2>{{ "{:,}".format(stats.fraud) }}</h2>
+                    <small class="red">{{ stats.fraud_rate }}% of total</small>
+                </div>
+            </article>
+
+            <article class="card kpi">
+                <span class="kpi-icon">▰</span>
+                <div>
+                    <p>Legitimate Transactions</p>
+                    <h2>{{ "{:,}".format(stats.legitimate) }}</h2>
+                    <small>Genuine transactions</small>
+                </div>
+            </article>
+
+            <article class="card kpi">
+                <span class="kpi-icon">＄</span>
+                <div>
+                    <p>Total Transaction Amount</p>
+                    <h2>{{ "{:,.2f}".format(stats.total_amount) }}</h2>
+                    <small>Total amount in dataset units</small>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- MAIN CHARTS -->
+        <section class="chart-grid">
+
+            <article class="card chart-card">
+                <h3>Transaction Class Distribution</h3>
+                <p>Fraudulent vs legitimate transactions</p>
+
+                <div class="chart-container">
+                    <canvas id="classChart" aria-label="Fraud and legitimate transaction distribution">
+                    </canvas>
+                </div>
+            </article>
+
+            <article class="card chart-card">
+                <h3>Transaction Amount Distribution</h3>
+                <p>Distribution of transaction amounts by class</p>
+
+                <div class="chart-container">
+                    <canvas id="amountChart" aria-label="Transaction amount distribution">
+                    </canvas>
+                </div>
+            </article>
+
+        </section>
+
+        <!-- BOTTOM SECTION -->
+        <section class="bottom-grid">
+
+            <article class="card chart-card">
+                <h3>Fraud Transactions by Time</h3>
+                <p>Transaction activity across elapsed hours</p>
+
+                <div class="chart-container time-chart-container">
+                    <canvas id="timeChart" aria-label="Transaction activity by elapsed hour">
+                    </canvas>
+                </div>
+            </article>
+
+            <article class="card findings">
+                <h3>💡 Key Findings</h3>
+
+                <div class="finding">
+                    <b>1</b>
+                    <div>
+                        <strong>Fraud rate</strong>
+                        <p>
+                            {{ stats.fraud_rate }}% of transactions
+                            are classified as fraudulent.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="finding">
+                    <b>2</b>
+                    <div>
+                        <strong>Transaction analysis</strong>
+                        <p>
+                            Compare fraudulent and legitimate
+                            transaction amounts to identify patterns.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="finding">
+                    <b>3</b>
+                    <div>
+                        <strong>Time patterns</strong>
+                        <p>
+                            Analyse transaction activity by elapsed hour
+                            to explore possible fraud patterns.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="finding">
+                    <b>4</b>
+                    <div>
+                        <strong>Class imbalance</strong>
+                        <p>
+                            Fraud cases represent a small proportion
+                            of transactions in this dataset.
+                        </p>
+                    </div>
+                </div>
+
+            </article>
+
+        </section>
+
+        <footer class="page-footer">
+            <p>FraudGuard AI · Credit Card Fraud Detection Dashboard</p>
+        </footer>
+
+    </main>
+
+    <script>
+        window.FRAUD_CHART_DATA = {{ chart_data | tojson }};
+    </script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
