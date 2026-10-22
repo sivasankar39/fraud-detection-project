@@ -1,0 +1,293 @@
+{
+  "reference": "Same hours of Day 1 (matched-hour reference)",
+  "thresholds": {
+    "psi_moderate": 0.1,
+    "psi_significant": 0.25
+  },
+  "windows": {
+    "24-30h": {
+      "window": "24-30h",
+      "n_reference": 12340,
+      "n_current": 11594,
+      "overall_status": "ALERT",
+      "n_significant": 4,
+      "share_significant": 0.4,
+      "summary": "4 of 10 monitored features show significant drift (PSI >= 0.25) in 24-30h, led by V1 (1.59), V3 (1.29), V28 (1.00).",
+      "features": [
+        {
+          "feature": "V1",
+          "psi": 1.595,
+          "ks": 0.395,
+          "status": "significant"
+        },
+        {
+          "feature": "V3",
+          "psi": 1.286,
+          "ks": 0.506,
+          "status": "significant"
+        },
+        {
+          "feature": "V28",
+          "psi": 0.996,
+          "ks": 0.337,
+          "status": "significant"
+        },
+        {
+          "feature": "V11",
+          "psi": 0.265,
+          "ks": 0.172,
+          "status": "significant"
+        },
+        {
+          "feature": "V4",
+          "psi": 0.151,
+          "ks": 0.135,
+          "status": "moderate"
+        },
+        {
+          "feature": "V17",
+          "psi": 0.091,
+          "ks": 0.138,
+          "status": "stable"
+        },
+        {
+          "feature": "V10",
+          "psi": 0.07,
+          "ks": 0.066,
+          "status": "stable"
+        },
+        {
+          "feature": "V14",
+          "psi": 0.043,
+          "ks": 0.042,
+          "status": "stable"
+        },
+        {
+          "feature": "Amount",
+          "psi": 0.026,
+          "ks": 0.05,
+          "status": "stable"
+        },
+        {
+          "feature": "V12",
+          "psi": 0.006,
+          "ks": 0.02,
+          "status": "stable"
+        }
+      ]
+    },
+    "30-36h": {
+      "window": "30-36h",
+      "n_reference": 35061,
+      "n_current": 35851,
+      "overall_status": "ALERT",
+      "n_significant": 4,
+      "share_significant": 0.4,
+      "summary": "4 of 10 monitored features show significant drift (PSI >= 0.25) in 30-36h, led by V1 (1.58), V3 (1.38), V28 (1.13).",
+      "features": [
+        {
+          "feature": "V1",
+          "psi": 1.581,
+          "ks": 0.439,
+          "status": "significant"
+        },
+        {
+          "feature": "V3",
+          "psi": 1.377,
+          "ks": 0.511,
+          "status": "significant"
+        },
+        {
+          "feature": "V28",
+          "psi": 1.131,
+          "ks": 0.376,
+          "status": "significant"
+        },
+        {
+          "feature": "V11",
+          "psi": 0.333,
+          "ks": 0.185,
+          "status": "significant"
+        },
+        {
+          "feature": "V4",
+          "psi": 0.182,
+          "ks": 0.177,
+          "status": "moderate"
+        },
+        {
+          "feature": "V14",
+          "psi": 0.083,
+          "ks": 0.071,
+          "status": "stable"
+        },
+        {
+          "feature": "V10",
+          "psi": 0.082,
+          "ks": 0.073,
+          "status": "stable"
+        },
+        {
+          "feature": "V17",
+          "psi": 0.044,
+          "ks": 0.089,
+          "status": "stable"
+        },
+        {
+          "feature": "V12",
+          "psi": 0.016,
+          "ks": 0.047,
+          "status": "stable"
+        },
+        {
+          "feature": "Amount",
+          "psi": 0.01,
+          "ks": 0.037,
+          "status": "stable"
+        }
+      ]
+    },
+    "36-42h": {
+      "window": "36-42h",
+      "n_reference": 46850,
+      "n_current": 49585,
+      "overall_status": "ALERT",
+      "n_significant": 4,
+      "share_significant": 0.4,
+      "summary": "4 of 10 monitored features show significant drift (PSI >= 0.25) in 36-42h, led by V1 (1.52), V3 (1.50), V28 (0.99).",
+      "features": [
+        {
+          "feature": "V1",
+          "psi": 1.517,
+          "ks": 0.422,
+          "status": "significant"
+        },
+        {
+          "feature": "V3",
+          "psi": 1.501,
+          "ks": 0.532,
+          "status": "significant"
+        },
+        {
+          "feature": "V28",
+          "psi": 0.99,
+          "ks": 0.363,
+          "status": "significant"
+        },
+        {
+          "feature": "V11",
+          "psi": 0.393,
+          "ks": 0.182,
+          "status": "significant"
+        },
+        {
+          "feature": "V4",
+          "psi": 0.205,
+          "ks": 0.181,
+          "status": "moderate"
+        },
+        {
+          "feature": "V14",
+          "psi": 0.108,
+          "ks": 0.09,
+          "status": "moderate"
+        },
+        {
+          "feature": "V10",
+          "psi": 0.088,
+          "ks": 0.067,
+          "status": "stable"
+        },
+        {
+          "feature": "V17",
+          "psi": 0.038,
+          "ks": 0.079,
+          "status": "stable"
+        },
+        {
+          "feature": "V12",
+          "psi": 0.013,
+          "ks": 0.043,
+          "status": "stable"
+        },
+        {
+          "feature": "Amount",
+          "psi": 0.004,
+          "ks": 0.028,
+          "status": "stable"
+        }
+      ]
+    },
+    "42-48h": {
+      "window": "42-48h",
+      "n_reference": 50535,
+      "n_current": 42991,
+      "overall_status": "ALERT",
+      "n_significant": 5,
+      "share_significant": 0.5,
+      "summary": "5 of 10 monitored features show significant drift (PSI >= 0.25) in 42-48h, led by V1 (1.62), V3 (1.46), V28 (1.07).",
+      "features": [
+        {
+          "feature": "V1",
+          "psi": 1.623,
+          "ks": 0.418,
+          "status": "significant"
+        },
+        {
+          "feature": "V3",
+          "psi": 1.459,
+          "ks": 0.527,
+          "status": "significant"
+        },
+        {
+          "feature": "V28",
+          "psi": 1.072,
+          "ks": 0.361,
+          "status": "significant"
+        },
+        {
+          "feature": "V11",
+          "psi": 0.38,
+          "ks": 0.167,
+          "status": "significant"
+        },
+        {
+          "feature": "V4",
+          "psi": 0.256,
+          "ks": 0.184,
+          "status": "significant"
+        },
+        {
+          "feature": "V14",
+          "psi": 0.103,
+          "ks": 0.105,
+          "status": "moderate"
+        },
+        {
+          "feature": "V10",
+          "psi": 0.096,
+          "ks": 0.06,
+          "status": "stable"
+        },
+        {
+          "feature": "V17",
+          "psi": 0.056,
+          "ks": 0.09,
+          "status": "stable"
+        },
+        {
+          "feature": "V12",
+          "psi": 0.011,
+          "ks": 0.037,
+          "status": "stable"
+        },
+        {
+          "feature": "Amount",
+          "psi": 0.005,
+          "ks": 0.019,
+          "status": "stable"
+        }
+      ]
+    }
+  }
+}
