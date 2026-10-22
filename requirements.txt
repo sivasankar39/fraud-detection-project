@@ -98,6 +98,7 @@ six==1.17.0
 sklearn-compat==0.1.6
 soupsieve==2.10
 stack-data==0.6.3
+streamlit==1.66.1
 terminado==0.18.1
 threadpoolctl==3.7.0
 tinycss2==1.5.1
