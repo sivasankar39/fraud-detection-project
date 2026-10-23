@@ -4,29 +4,416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0b0c0e">
-    <title>Fraud Analytics | FraudGuard AI</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <title>Advanced Fraud Analytics | FraudGuard AI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --navy: #102c53;
+            --muted: #7185a3;
+            --blue: #3296f5;
+            --purple: #8062ef;
+            --red: #ff3048;
+            --green: #0ba582;
+            --border: #e1e9f5;
+            --bg: #eef3f9;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font: 14px/1.55 "Segoe UI", Arial, sans-serif;
+            background: var(--bg);
+            color: var(--navy);
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 280px;
+            background: white;
+            border-right: 1px solid var(--border);
+            padding: 27px 20px;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 23px;
+            font-weight: 750;
+            letter-spacing: -.6px;
+        }
+
+        .brand span {
+            color: #2563eb;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 5px 0 30px;
+        }
+
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            min-height: 49px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-weight: 550;
+        }
+
+        .sidebar nav a:hover {
+            background: #f0f6ff;
+        }
+
+        .sidebar nav a.active {
+            background: #e3efff;
+            color: #1755ed;
+            font-weight: 700;
+        }
+
+        .dataset-info {
+            margin-top: 32px;
+            padding: 18px;
+            background: #f0f5ff;
+            border: 1px solid #e4ecf9;
+            border-radius: 16px;
+        }
+
+        .dataset-info h3 {
+            margin: 0 0 12px;
+        }
+
+        .dataset-info p {
+            margin: 8px 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 32px 39px 45px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-bottom: 26px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #dce5f1;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: clamp(27px, 3vw, 37px);
+        }
+
+        .page-header p {
+            margin: 7px 0 0;
+            color: var(--muted);
+        }
+
+        .back-link {
+            color: #2563eb;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 26px;
+        }
+
+        .stat-card {
+            min-width: 0;
+            padding: 26px;
+            min-height: 175px;
+            background: white;
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--blue);
+            border-radius: 19px;
+            box-shadow: 0 8px 25px rgba(31, 75, 130, .055);
+        }
+
+        .stat-card.purple {
+            border-top-color: var(--purple);
+        }
+
+        .stat-card.red {
+            border-top-color: var(--red);
+        }
+
+        .stat-card.green {
+            border-top-color: var(--green);
+        }
+
+        .stat-card .label {
+            margin: 0 0 16px;
+            color: var(--muted);
+        }
+
+        .stat-card h2 {
+            margin: 0 0 15px;
+            font-size: clamp(24px, 2vw, 34px);
+            overflow-wrap: anywhere;
+        }
+
+        .stat-card small {
+            color: var(--muted);
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 22px;
+            margin-bottom: 25px;
+        }
+
+        .chart-card,
+        .table-card {
+            min-width: 0;
+            padding: 27px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 19px;
+            box-shadow: 0 8px 25px rgba(31, 75, 130, .055);
+        }
+
+        .chart-card h3,
+        .table-card h3 {
+            margin: 0 0 9px;
+            font-size: 20px;
+        }
+
+        .chart-card p,
+        .table-card>p {
+            margin: 0 0 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 310px;
+        }
+
+        .chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            margin: 24px 0 22px;
+        }
+
+        .toolbar input,
+        .toolbar select {
+            width: 100%;
+            min-width: 0;
+            padding: 14px 13px;
+            border: 1px solid #dce5f2;
+            border-radius: 12px;
+            background: #f8fbff;
+            color: var(--navy);
+            outline: none;
+        }
+
+        .toolbar input:focus,
+        .toolbar select:focus {
+            border-color: var(--blue);
+        }
+
+        .export-btn {
+            padding: 12px 17px;
+            background: #2563eb;
+            color: white;
+            border: 0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 650;
+            white-space: nowrap;
+        }
+
+        .export-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: #f0f5fd;
+        }
+
+        th,
+        td {
+            padding: 16px;
+            text-align: left;
+        }
+
+        th {
+            color: #37537a;
+            white-space: nowrap;
+        }
+
+        td {
+            border-top: 1px solid var(--border);
+        }
+
+        tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .fraud-tag {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #fff0f1;
+            color: var(--red);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 19px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            color: var(--navy);
+            cursor: pointer;
+        }
+
+        .pagination button:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        footer {
+            padding-top: 27px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media(max-width:1350px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .toolbar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media(max-width:1000px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media(max-width:900px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .sidebar nav {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px 18px;
+            }
+        }
+
+        @media(max-width:550px) {
+
+            .stats-grid,
+            .toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card,
+            .table-card {
+                padding: 18px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
-        <h1>🛡 Fraud<span>Guard</span> AI</h1>
+        <div class="brand">♡ Fraud<span>Guard</span> AI</div>
         <p class="subtitle">Cost-Sensitive Fraud Detection</p>
 
         <nav>
             <a href="/">⌂ Overview</a>
-            <a href="{{ url_for('analytics') }}" class="active">▥ Fraud Analytics</a>
-            <a href="/#cost-optimizer">◎ Cost Optimizer</a>
-            <a href="/#pr-explorer">◉ PR Explorer</a>
-            <a href="/#simulator">▷ Live Simulator</a>
-            <a href="/#investigation">▤ Investigation Queue</a>
-            <a href="/#drift">⌁ Drift Monitor</a>
+            <a href="/analytics" class="active">▥ Fraud Analytics</a>
+            <a href="/cost-optimizer">◎ Cost Optimizer</a>
+            <a href="/pr-explorer">◉ PR Explorer</a>
+            <a href="/live-simulator">▷ Live Simulator</a>
+            <a href="/investigation-queue">▤ Investigation Queue</a>
+            <a href="/drift-monitor">⌁ Drift Monitor</a>
         </nav>
 
         <div class="dataset-info">
@@ -38,146 +425,101 @@
         </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main class="main-content">
 
-        <!-- PAGE HEADER -->
         <header class="page-header">
             <div>
-                <h1>Fraud Analytics</h1>
-                <p>Explore fraudulent and legitimate transaction patterns.</p>
+                <h1>Advanced Fraud Analytics</h1>
+                <p>Detailed investigation of fraud amounts, risk patterns and transactions.</p>
             </div>
-
             <a href="/" class="back-link">← Back to Overview</a>
         </header>
 
-        <!-- KPI CARDS -->
         <section class="stats-grid">
-
             <article class="stat-card">
-                <p>Total Transactions</p>
-                <h2>{{ "{:,}".format(stats.total) }}</h2>
+                <p class="label">Average Fraud Amount</p>
+                <h2 id="meanAmount">—</h2>
+                <small>Mean amount of labeled fraud</small>
             </article>
 
-            <article class="stat-card">
-                <p>Fraudulent Transactions</p>
-                <h2 style="color:#ed2338;">
-                    {{ "{:,}".format(stats.fraud) }}
-                </h2>
-                <small>{{ stats.fraud_rate }}% of all transactions</small>
+            <article class="stat-card purple">
+                <p class="label">Median Fraud Amount</p>
+                <h2 id="medianAmount">—</h2>
+                <small>Middle fraud transaction amount</small>
             </article>
 
-            <article class="stat-card">
-                <p>Legitimate Transactions</p>
-                <h2>{{ "{:,}".format(stats.legitimate) }}</h2>
+            <article class="stat-card red">
+                <p class="label">Maximum Fraud Amount</p>
+                <h2 id="maxAmount">—</h2>
+                <small>Largest labeled fraud transaction</small>
             </article>
 
-            <article class="stat-card">
-                <p>Fraud Detection Ratio</p>
-                <h2>{{ "%.2f"|format(stats.fraud_rate) }}%</h2>
+            <article class="stat-card green">
+                <p class="label">Fraud Amount Total</p>
+                <h2 id="totalAmount">—</h2>
+                <small>Sum of labeled fraud amounts</small>
             </article>
-
         </section>
 
-        <!-- CHARTS -->
-        <section class="charts-grid">
-
+        <section class="chart-grid">
             <article class="chart-card">
-                <h3>Transaction Class Distribution</h3>
-                <p>Fraudulent versus legitimate transactions</p>
-
-                <div class="chart-container">
-                    <canvas id="classChart"></canvas>
+                <h3>Fraud Rate by Amount Range</h3>
+                <p>Percentage of fraudulent transactions within each amount band.</p>
+                <div class="chart-wrapper">
+                    <canvas id="fraudRateChart"></canvas>
                 </div>
             </article>
 
             <article class="chart-card">
-                <h3>Fraud by Transaction Amount</h3>
-                <p>Compare transaction counts across amount ranges</p>
-
-                <div class="chart-container">
-                    <canvas id="amountChart"></canvas>
+                <h3>Fraud Cases by Amount Range</h3>
+                <p>Fraud-only counts, without the legitimate transaction scale.</p>
+                <div class="chart-wrapper">
+                    <canvas id="fraudCountChart"></canvas>
                 </div>
             </article>
 
             <article class="chart-card">
-                <h3>Transaction Activity Over Time</h3>
-                <p>Fraud and legitimate transactions by elapsed hour</p>
-
-                <div class="chart-container time-chart-container">
-                    <canvas id="timeChart"></canvas>
+                <h3>Fraud Activity by Elapsed Hour</h3>
+                <p>Number of labeled fraud transactions per elapsed-hour interval.</p>
+                <div class="chart-wrapper">
+                    <canvas id="fraudTimeChart"></canvas>
                 </div>
             </article>
 
             <article class="chart-card">
-                <h3>💡 Key Findings</h3>
-
-                <div class="finding">
-                    <b>1</b>
-                    <div>
-                        <strong>Fraud Rate</strong>
-                        <p>
-                            {{ stats.fraud_rate }}% of transactions are
-                            classified as fraudulent in this dataset.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="finding">
-                    <b>2</b>
-                    <div>
-                        <strong>Class Imbalance</strong>
-                        <p>
-                            Legitimate transactions significantly outnumber
-                            fraudulent transactions.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="finding">
-                    <b>3</b>
-                    <div>
-                        <strong>Amount Analysis</strong>
-                        <p>
-                            Compare fraud and legitimate transaction counts
-                            across transaction amount ranges.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="finding">
-                    <b>4</b>
-                    <div>
-                        <strong>Investigation</strong>
-                        <p>
-                            Fraudulent transactions require further
-                            investigation before drawing conclusions.
-                        </p>
-                    </div>
+                <h3>Hourly Fraud Rate</h3>
+                <p>Fraud percentage within each elapsed-hour interval.</p>
+                <div class="chart-wrapper">
+                    <canvas id="hourlyRateChart"></canvas>
                 </div>
             </article>
-
         </section>
 
-        <!-- FRAUD TRANSACTIONS TABLE -->
-        <section class="chart-card fraud-table-section">
+        <section class="table-card">
+            <h3>Fraud Transaction Explorer</h3>
+            <p>Search, filter, sort and export labeled fraudulent transactions.</p>
 
-            <h3>🚨 Fraud Transactions</h3>
-            <p>Search and filter transactions classified as fraudulent.</p>
+            <div class="toolbar">
+                <input id="searchInput" type="search" placeholder="Search transaction ID...">
 
-            <div class="fraud-filters">
-                <input type="text" id="fraudSearch" placeholder="Search transaction ID..."
-                    aria-label="Search transaction ID">
+                <input id="minAmount" type="number" placeholder="Minimum amount" min="0" step="any">
 
-                <input type="number" id="minAmount" placeholder="Min amount" min="0" step="any"
-                    aria-label="Minimum transaction amount">
+                <input id="maxAmountFilter" type="number" placeholder="Maximum amount" min="0" step="any">
 
-                <input type="number" id="maxAmount" placeholder="Max amount" min="0" step="any"
-                    aria-label="Maximum transaction amount">
+                <select id="sortSelect">
+                    <option value="amount-desc">Amount: High to Low</option>
+                    <option value="amount-asc">Amount: Low to High</option>
+                    <option value="time-asc">Time: Earliest First</option>
+                    <option value="time-desc">Time: Latest First</option>
+                </select>
+
+                <button class="export-btn" id="exportBtn" disabled>
+                    ↓ Export CSV
+                </button>
             </div>
 
-            <div class="table-wrapper">
-                <table id="fraudTable">
+            <div class="table-wrap">
+                <table>
                     <thead>
                         <tr>
                             <th>Transaction ID</th>
@@ -186,105 +528,417 @@
                             <th>Status</th>
                         </tr>
                     </thead>
-
-                    <tbody>
-                        {% for row in fraud_rows %}
+                    <tbody id="fraudTableBody">
                         <tr>
-                            <td>{{ row.transaction_id }}</td>
-                            <td>
-                                {{ row.time if row.time is not none else "N/A" }}
-                            </td>
-                            <td class="amount-value">
-                                {{ "%.2f"|format(row.amount) }}
-                            </td>
-                            <td>
-                                <span class="fraud-badge">Fraud</span>
-                            </td>
+                            <td colspan="4">Loading fraud transactions...</td>
                         </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4">No fraudulent transactions found.</td>
-                        </tr>
-                        {% endfor %}
                     </tbody>
                 </table>
             </div>
 
-            <p id="fraudResultCount">
-                Showing {{ fraud_rows|length }} fraudulent transactions
-            </p>
-
+            <div class="table-footer">
+                <span id="tableCount">Loading...</span>
+                <div class="pagination">
+                    <button id="prevBtn" disabled>← Previous</button>
+                    <span id="pageLabel">Page 1</span>
+                    <button id="nextBtn" disabled>Next →</button>
+                </div>
+            </div>
         </section>
 
-        <footer class="page-footer">
-            FraudGuard AI · Credit Card Fraud Analytics
-        </footer>
-
+        <footer>FraudGuard AI · Advanced Fraud Analytics</footer>
     </main>
 
-    <!-- CHART DATA -->
+    <script id="analytics-json" type="application/json">
+{{ analytics_data | default({}, true) | tojson }}
+</script>
+
     <script>
-        window.FRAUD_CHART_DATA = {{ chart_data | tojson }};
-    </script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            "use strict";
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+            const $ = id => document.getElementById(id);
 
-    <!-- FRAUD TABLE FILTERS -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const search = document.getElementById("fraudSearch");
-            const minInput = document.getElementById("minAmount");
-            const maxInput = document.getElementById("maxAmount");
-            const rows = Array.from(
-                document.querySelectorAll("#fraudTable tbody tr")
-            );
-            const count = document.getElementById("fraudResultCount");
-
-            function filterFraudRows() {
-                const query = search.value.trim().toLowerCase();
-                const min = minInput.value === ""
-                    ? null : Number(minInput.value);
-                const max = maxInput.value === ""
-                    ? null : Number(maxInput.value);
-
-                let visible = 0;
-                let totalDataRows = 0;
-
-                rows.forEach(function (row) {
-                    const cells = row.querySelectorAll("td");
-
-                    if (cells.length < 4) {
-                        row.style.display = "";
-                        return;
-                    }
-
-                    totalDataRows++;
-
-                    const id = cells[0].textContent.trim().toLowerCase();
-                    const amount = Number(
-                        cells[2].textContent.replace(/,/g, "")
-                    );
-
-                    const matchesSearch = id.includes(query);
-                    const matchesMin = min === null || amount >= min;
-                    const matchesMax = max === null || amount <= max;
-
-                    const show =
-                        matchesSearch && matchesMin && matchesMax;
-
-                    row.style.display = show ? "" : "none";
-
-                    if (show) visible++;
-                });
-
-                count.textContent =
-                    "Showing " + visible + " of " +
-                    totalDataRows + " fraudulent transactions";
+            let analytics = {};
+            try {
+                analytics = JSON.parse($("analytics-json").textContent || "{}");
+            } catch (error) {
+                console.error("Analytics JSON error:", error);
             }
 
-            search.addEventListener("input", filterFraudRows);
-            minInput.addEventListener("input", filterFraudRows);
-            maxInput.addEventListener("input", filterFraudRows);
+            const summary = analytics.summary || {};
+            const bands = analytics.amount_bands || {};
+            const hourly = analytics.hourly || {};
+
+            const numberFormat = value => {
+                const n = Number(value);
+                return value == null || !Number.isFinite(n)
+                    ? "—"
+                    : n.toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+            };
+
+            // KPI cards
+            [
+                ["meanAmount", summary.mean],
+                ["medianAmount", summary.median],
+                ["maxAmount", summary.maximum],
+                ["totalAmount", summary.total]
+            ].forEach(([id, value]) => {
+                $(id).textContent = numberFormat(value);
+            });
+
+            // CHARTS - preserve previous four-graph design
+            function createChart(id, type, labels, values, color, percent, fill) {
+                if (
+                    typeof Chart === "undefined" ||
+                    !Array.isArray(labels) ||
+                    !Array.isArray(values) ||
+                    labels.length === 0 ||
+                    labels.length !== values.length
+                ) return;
+
+                new Chart($(id), {
+                    type,
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: values,
+                            borderColor: color,
+                            backgroundColor: type === "line"
+                                ? color === "#ff3048"
+                                    ? "rgba(255,48,72,.10)"
+                                    : "rgba(50,150,245,.10)"
+                                : color,
+                            borderWidth: type === "line" ? 2.8 : 0,
+                            borderRadius: type === "bar" ? 5 : 0,
+                            maxBarThickness: 35,
+                            tension: .18,
+                            fill,
+                            pointRadius: type === "line" ? 2 : 0,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: "#172b4d",
+                                padding: 12,
+                                callbacks: {
+                                    label: ctx =>
+                                        percent
+                                            ? ctx.parsed.y + "%"
+                                            : Number(ctx.parsed.y).toLocaleString()
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: "#7185a3",
+                                    maxRotation: 50,
+                                    minRotation: 35,
+                                    maxTicksLimit: type === "line" ? 17 : 14
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: "#e8eef7" },
+                                ticks: {
+                                    color: "#7185a3",
+                                    callback: value => percent ? value + "%" : value
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            createChart(
+                "fraudRateChart", "bar",
+                bands.labels, bands.fraud_rates,
+                "#8062ef", true, false
+            );
+
+            createChart(
+                "fraudCountChart", "bar",
+                bands.labels, bands.fraud_counts,
+                "#ff3048", false, false
+            );
+
+            createChart(
+                "fraudTimeChart", "line",
+                hourly.labels, hourly.fraud_counts,
+                "#ff3048", false, true
+            );
+
+            createChart(
+                "hourlyRateChart", "line",
+                hourly.labels, hourly.fraud_rates,
+                "#3296f5", true, false
+            );
+
+            // FRAUD TRANSACTION EXPLORER
+            const tbody = $("fraudTableBody");
+            const searchInput = $("searchInput");
+            const minInput = $("minAmount");
+            const maxInput = $("maxAmountFilter");
+            const sortInput = $("sortSelect");
+            const prevBtn = $("prevBtn");
+            const nextBtn = $("nextBtn");
+            const exportBtn = $("exportBtn");
+
+            const PAGE_SIZE = 15;
+            let transactions = [];
+            let filteredRows = [];
+            let currentPage = 1;
+            let loadComplete = false;
+
+            function showMessage(message) {
+                tbody.replaceChildren();
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 4;
+                td.textContent = message;
+                td.style.color = "#7185a3";
+                td.style.padding = "22px";
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
+
+            // Supports both API and uploaded CSV field names.
+            // Only explicitly labeled fraud rows are accepted.
+
+            function normalizeRows(rows) {
+                if (!Array.isArray(rows)) {
+                    console.error("Expected transactions array:", rows);
+                    return [];
+                }
+
+                return rows.map((row, index) => {
+                    const id =
+                        row.id ??
+                        row.transaction_id ??
+                        row.TransactionID ??
+                        row.index ??
+                        index;
+
+                    const time =
+                        row.time ??
+                        row.Time ??
+                        row.elapsed_time ??
+                        0;
+
+                    const amount =
+                        row.amount ??
+                        row.Amount ??
+                        0;
+
+                    const fraudClass = row.class ?? row.Class;
+                    const status = row.status ?? row.Status;
+
+                    return {
+                        id: String(id),
+                        time: Number(time),
+                        amount: Number(amount),
+                        isFraud:
+                            Number(fraudClass) === 1 ||
+                            String(status ?? "").trim().toLowerCase() === "fraud"
+                    };
+                }).filter(row =>
+                    row.isFraud &&
+                    Number.isFinite(row.time) &&
+                    Number.isFinite(row.amount)
+                );
+            }
+
+
+            function updateTable(resetPage = true) {
+                if (!loadComplete) return;
+                if (resetPage) currentPage = 1;
+
+                const query = searchInput.value.trim();
+                const min = minInput.value === ""
+                    ? -Infinity : Number(minInput.value);
+                const max = maxInput.value === ""
+                    ? Infinity : Number(maxInput.value);
+
+                filteredRows = transactions.filter(row =>
+                    row.id.includes(query) &&
+                    row.amount >= min &&
+                    row.amount <= max
+                );
+
+                filteredRows.sort((a, b) => {
+                    switch (sortInput.value) {
+                        case "amount-asc": return a.amount - b.amount;
+                        case "time-asc": return a.time - b.time;
+                        case "time-desc": return b.time - a.time;
+                        default: return b.amount - a.amount;
+                    }
+                });
+
+                const totalPages = Math.max(
+                    1, Math.ceil(filteredRows.length / PAGE_SIZE)
+                );
+
+                currentPage = Math.min(currentPage, totalPages);
+
+                const start = (currentPage - 1) * PAGE_SIZE;
+                const pageRows = filteredRows.slice(start, start + PAGE_SIZE);
+
+                tbody.replaceChildren();
+
+                if (pageRows.length === 0) {
+                    showMessage("No matching fraud transactions.");
+                }
+
+                pageRows.forEach(row => {
+                    const tr = document.createElement("tr");
+
+                    [
+                        row.id,
+                        numberFormat(row.time),
+                        numberFormat(row.amount)
+                    ].forEach(value => {
+                        const td = document.createElement("td");
+                        td.textContent = value;
+                        tr.appendChild(td);
+                    });
+
+                    const td = document.createElement("td");
+                    const badge = document.createElement("span");
+                    badge.className = "fraud-tag";
+                    badge.textContent = "Fraud";
+                    td.appendChild(badge);
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                });
+
+                $("tableCount").textContent =
+                    filteredRows.length.toLocaleString() +
+                    " matching fraud transactions";
+
+                $("pageLabel").textContent =
+                    `Page ${currentPage} of ${totalPages}`;
+
+                prevBtn.disabled = currentPage <= 1;
+                nextBtn.disabled = currentPage >= totalPages;
+                exportBtn.disabled = filteredRows.length === 0;
+            }
+
+            [searchInput, minInput, maxInput].forEach(input =>
+                input.addEventListener("input", () => updateTable(true))
+            );
+
+            sortInput.addEventListener("change", () => updateTable(true));
+
+            prevBtn.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateTable(false);
+                }
+            });
+
+            nextBtn.addEventListener("click", () => {
+                if (currentPage * PAGE_SIZE < filteredRows.length) {
+                    currentPage++;
+                    updateTable(false);
+                }
+            });
+
+            exportBtn.addEventListener("click", () => {
+                if (!filteredRows.length) return;
+
+                const rows = [
+                    ["Transaction ID", "Elapsed Time", "Amount", "Status"],
+                    ...filteredRows.map(row => [
+                        row.id, row.time, row.amount, "Fraud"
+                    ])
+                ];
+
+                const csv = rows.map(row =>
+                    row.map(value =>
+                        '"' + String(value).replace(/"/g, '""') + '"'
+                    ).join(",")
+                ).join("\r\n");
+
+                const blob = new Blob([csv], {
+                    type: "text/csv;charset=utf-8;"
+                });
+
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "fraud_transactions_filtered.csv";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            });
+
+            // API primary, template data fallback.
+            async function loadFraudTransactions() {
+                showMessage("Loading fraud transactions...");
+                $("tableCount").textContent = "Loading...";
+
+                let apiError = null;
+
+                try {
+                    const response = await fetch(
+                        "/api/analytics/fraud-transactions",
+                        { cache: "no-store" }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error("API HTTP " + response.status);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success === false) {
+                        throw new Error(result.error || "API failed");
+                    }
+
+                    if (!Array.isArray(result.transactions)) {
+                        throw new Error("Missing transactions array");
+                    }
+
+                    transactions = normalizeRows(result.transactions);
+
+                    console.log("API rows:", result.transactions.length);
+                    console.log("Valid fraud rows:", transactions.length);
+
+                } catch (error) {
+                    apiError = error;
+                    console.warn("API load failed:", error);
+                }
+
+                if (apiError) {
+                    transactions = normalizeRows(
+                        analytics.fraud_transactions || []
+                    );
+                }
+
+                if (apiError && transactions.length === 0) {
+                    showMessage(
+                        "Could not load fraud transactions: " + apiError.message
+                    );
+                    $("tableCount").textContent = "Loading failed";
+                    return;
+                }
+
+                loadComplete = true;
+                updateTable(true);
+            }
+
+            await loadFraudTransactions();
         });
     </script>
 

@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Live Simulator | FraudGuard AI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .sim-page {
+            color: #15345e;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .sim-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .sim-header h1 {
+            font-size: 32px;
+            margin: 0 0 8px;
+        }
+
+        .sim-muted {
+            color: #7890ae;
+            line-height: 1.6;
+        }
+
+        .sim-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 30px;
+            background: #edf4ff;
+            color: #2463eb;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .sim-dot {
+            width: 9px;
+            height: 9px;
+            background: #94a3b8;
+            border-radius: 50%;
+        }
+
+        .sim-dot.running {
+            background: #10b981;
+            box-shadow: 0 0 0 4px #d1fae5;
+        }
+
+        .sim-panel,
+        .sim-kpi {
+            background: white;
+            border: 1px solid #e2eaf5;
+            border-radius: 18px;
+            box-shadow: 0 6px 20px rgba(30, 70, 120, .05);
+        }
+
+        .sim-panel {
+            padding: 24px;
+            margin-bottom: 22px;
+            min-width: 0;
+        }
+
+        .sim-panel h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        .sim-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .sim-btn {
+            border: 0;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .sim-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .sim-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sim-start {
+            background: #2463eb;
+            color: white;
+        }
+
+        .sim-pause {
+            background: #fff4e5;
+            color: #b66a00;
+        }
+
+        .sim-reset {
+            background: #edf2f8;
+            color: #345273;
+        }
+
+        .sim-speed {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #5c7190;
+            font-size: 13px;
+        }
+
+        .sim-speed select {
+            padding: 10px;
+            border: 1px solid #dce6f3;
+            border-radius: 9px;
+            background: white;
+            color: #15345e;
+        }
+
+        .sim-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .sim-kpi {
+            padding: 23px;
+            border-top: 4px solid #3388f5;
+        }
+
+        .sim-kpi.fraud {
+            border-top-color: #ef476f;
+        }
+
+        .sim-kpi.safe {
+            border-top-color: #10b981;
+        }
+
+        .sim-kpi.rate {
+            border-top-color: #8b5cf6;
+        }
+
+        .sim-kpi p {
+            color: #7890ae;
+            font-size: 13px;
+            margin: 0 0 14px;
+        }
+
+        .sim-kpi h2 {
+            font-size: 29px;
+            margin: 0 0 8px;
+        }
+
+        .sim-kpi small {
+            color: #7890ae;
+        }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .sim-chart {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .sim-alerts {
+            max-height: 320px;
+            overflow-y: auto;
+            margin-top: 16px;
+        }
+
+        .sim-alert {
+            padding: 15px;
+            border: 1px solid #ffd9e2;
+            background: #fff5f7;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .sim-alert strong {
+            color: #b42343;
+        }
+
+        .sim-alert p {
+            margin: 6px 0 0;
+            color: #6c7f99;
+            font-size: 13px;
+        }
+
+        .sim-empty {
+            padding: 22px;
+            color: #8aa0ba;
+            text-align: center;
+        }
+
+        .sim-table-wrap {
+            overflow-x: auto;
+            margin-top: 18px;
+        }
+
+        .sim-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        .sim-table th {
+            background: #f4f8ff;
+            color: #7186a3;
+            text-align: left;
+            font-size: 12px;
+            padding: 14px;
+        }
+
+        .sim-table td {
+            padding: 15px 14px;
+            border-bottom: 1px solid #edf2f8;
+            font-size: 13px;
+        }
+
+        .sim-table tr:hover {
+            background: #f8fbff;
+        }
+
+        .sim-label {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 6px 10px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .sim-label.fraud {
+            color: #be2348;
+            background: #ffe8ee;
+        }
+
+        .sim-label.safe {
+            color: #078467;
+            background: #dcfce7;
+        }
+
+        .sim-note {
+            margin-top: 14px;
+            padding: 13px;
+            background: #f2f7ff;
+            border-radius: 10px;
+            color: #607997;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1200px) {
+            .sim-kpis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sim-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .sim-kpis {
+                grid-template-columns: 1fr;
+            }
+
+            .sim-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .sim-speed {
+                margin-left: 0;
+            }
+
+            .sim-panel {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <h1>🛡 Fraud<span>Guard</span> AI</h1>
+        <p class="subtitle">Cost-Sensitive Fraud Detection</p>
+
+        <nav>
+            <a href="/">⌂ Overview</a>
+            <a href="/analytics">▥ Fraud Analytics</a>
+            <a href="/cost-optimizer">◎ Cost Optimizer</a>
+            <a href="/pr-explorer">◉ PR Explorer</a>
+            <a href="/live-simulator" class="active">
+                ▷ Live Simulator
+            </a>
+            <a href="/#investigation">▤ Investigation Queue</a>
+            <a href="/#drift">⌁ Drift Monitor</a>
+        </nav>
+
+        <div class="dataset-info">
+            <h3>Dataset Info</h3>
+            <p>Credit Card Transactions</p>
+            <p>{{ "{:,}".format(stats.total) }} transactions</p>
+            <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
+            <p>{{ stats.fraud_rate }}% fraud rate</p>
+        </div>
+    </aside>
+
+    <main class="main-content sim-page">
+
+        <header class="sim-header">
+            <div>
+                <h1>Live Transaction Simulator</h1>
+                <p class="sim-muted">
+                    Replay historical transactions and monitor
+                    actual fraud labels in real time.
+                </p>
+            </div>
+
+            <span class="sim-pill">
+                <span class="sim-dot" id="statusDot"></span>
+                <span id="statusText">Ready</span>
+            </span>
+        </header>
+
+        <section class="sim-panel">
+            <h3>Simulation Control Center</h3>
+            <p class="sim-muted">
+                Start, pause or reset the chronological
+                transaction replay.
+            </p>
+
+            <div class="sim-controls">
+                <button class="sim-btn sim-start" id="startBtn">
+                    ▶ Start Simulation
+                </button>
+
+                <button class="sim-btn sim-pause" id="pauseBtn" disabled>
+                    ⏸ Pause
+                </button>
+
+                <button class="sim-btn sim-reset" id="resetBtn">
+                    ↺ Reset
+                </button>
+
+                <label class="sim-speed">
+                    Replay Speed
+                    <select id="speedSelect">
+                        <option value="1200">Slow</option>
+                        <option value="650" selected>Normal</option>
+                        <option value="250">Fast</option>
+                        <option value="80">Ultra Fast</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="sim-note">
+                Simulation mode: Historical dataset replay.
+                Fraud indicators represent actual dataset
+                labels, not ML model predictions.
+            </div>
+        </section>
+
+        <section class="sim-kpis">
+            <article class="sim-kpi">
+                <p>Processed Transactions</p>
+                <h2 id="processedCount">0</h2>
+                <small>Transactions replayed</small>
+            </article>
+
+            <article class="sim-kpi fraud">
+                <p>Actual Fraud Cases</p>
+                <h2 id="fraudCount">0</h2>
+                <small>Class = 1</small>
+            </article>
+
+            <article class="sim-kpi safe">
+                <p>Legitimate Transactions</p>
+                <h2 id="safeCount">0</h2>
+                <small>Class = 0</small>
+            </article>
+
+            <article class="sim-kpi rate">
+                <p>Observed Fraud Rate</p>
+                <h2 id="fraudRate">0.00%</h2>
+                <small>Fraud among replayed records</small>
+            </article>
+        </section>
+
+        <section class="sim-grid">
+
+            <article class="sim-panel">
+                <h3>Live Transaction Activity</h3>
+                <p class="sim-muted">
+                    Running totals of replayed transactions
+                    and labeled fraud cases.
+                </p>
+
+                <div class="sim-chart">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </article>
+
+            <article class="sim-panel">
+                <h3>Fraud Event Feed</h3>
+                <p class="sim-muted">
+                    Historical fraud cases detected
+                    from ground-truth labels.
+                </p>
+
+                <div id="alertFeed" class="sim-alerts">
+                    <p class="sim-empty">
+                        Start simulation to replay transactions.
+                    </p>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="sim-panel">
+            <h3>Recent Transaction Queue</h3>
+            <p class="sim-muted">
+                Latest 30 replayed transactions.
+            </p>
+
+            <div class="sim-table-wrap">
+                <table class="sim-table">
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Elapsed Time</th>
+                            <th>Amount</th>
+                            <th>Actual Label</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="transactionBody">
+                        <tr>
+                            <td colspan="4" class="sim-empty">
+                                No transactions processed yet.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const API_URL = "/api/simulator/transactions";
+
+        let running = false;
+        let timer = null;
+        let offset = 0;
+        let total = 0;
+        let processed = 0;
+        let fraud = 0;
+        let safe = 0;
+
+        let queue = [];
+        let alerts = [];
+
+        let buffer = [];
+        let hasMore = true;
+        let loading = false;
+        let generation = 0;
+
+        const $ = id => document.getElementById(id);
+
+        const numberFormat = value =>
+            Number(value).toLocaleString("en-US");
+
+        const chart = typeof Chart !== "undefined"
+            ? new Chart($("activityChart"), {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: "Processed",
+                            data: [],
+                            borderColor: "#3289f5",
+                            backgroundColor:
+                                "rgba(50,137,245,.08)",
+                            borderWidth: 2,
+                            tension: .25,
+                            pointRadius: 0
+                        },
+                        {
+                            label: "Actual Fraud",
+                            data: [],
+                            borderColor: "#ef476f",
+                            borderWidth: 2,
+                            tension: .25,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            })
+            : null;
+
+        function setStatus(message, active = false) {
+            $("statusText").textContent = message;
+            $("statusDot").classList.toggle(
+                "running", active
+            );
+        }
+
+        function updateButtons() {
+            $("startBtn").disabled = running;
+            $("pauseBtn").disabled = !running;
+        }
+
+        function updateStats() {
+            $("processedCount").textContent =
+                numberFormat(processed);
+
+            $("fraudCount").textContent =
+                numberFormat(fraud);
+
+            $("safeCount").textContent =
+                numberFormat(safe);
+
+            $("fraudRate").textContent =
+                processed
+                    ? ((fraud / processed) * 100).toFixed(2)
+                    + "%"
+                    : "0.00%";
+        }
+
+        function updateChart() {
+            if (!chart) return;
+
+            chart.data.labels.push(processed);
+            chart.data.datasets[0].data.push(processed);
+            chart.data.datasets[1].data.push(fraud);
+
+            if (chart.data.labels.length > 60) {
+                chart.data.labels.shift();
+
+                chart.data.datasets.forEach(dataset => {
+                    dataset.data.shift();
+                });
+            }
+
+            chart.update("none");
+        }
+
+        function renderQueue() {
+            const body = $("transactionBody");
+            body.replaceChildren();
+
+            for (const tx of queue) {
+                const tr = document.createElement("tr");
+
+                const id = document.createElement("td");
+                id.textContent = "#" + tx.id;
+
+                const time = document.createElement("td");
+                time.textContent =
+                    Number(tx.time).toFixed(0) + " sec";
+
+                const amount = document.createElement("td");
+                amount.textContent =
+                    Number(tx.amount).toFixed(2);
+
+                const labelCell = document.createElement("td");
+                const label = document.createElement("span");
+
+                label.className = "sim-label " +
+                    (tx.actual_class === 1
+                        ? "fraud" : "safe");
+
+                label.textContent =
+                    tx.actual_class === 1
+                        ? "Fraud"
+                        : "Legitimate";
+
+                labelCell.appendChild(label);
+
+                tr.append(id, time, amount, labelCell);
+                body.appendChild(tr);
+            }
+        }
+
+        function renderAlerts() {
+            const feed = $("alertFeed");
+            feed.replaceChildren();
+
+            if (!alerts.length) {
+                const empty = document.createElement("p");
+                empty.className = "sim-empty";
+                empty.textContent =
+                    "No labeled fraud cases encountered yet.";
+                feed.appendChild(empty);
+                return;
+            }
+
+            for (const tx of alerts) {
+                const card = document.createElement("div");
+                card.className = "sim-alert";
+
+                const heading = document.createElement("strong");
+                heading.textContent =
+                    "Fraud Case #" + tx.id;
+
+                const detail = document.createElement("p");
+                detail.textContent =
+                    "Amount: " +
+                    Number(tx.amount).toFixed(2) +
+                    " | Elapsed: " +
+                    Number(tx.time).toFixed(0) +
+                    " sec";
+
+                card.append(heading, detail);
+                feed.appendChild(card);
+            }
+        }
+
+        async function fetchBatch() {
+            if (loading || !hasMore) return;
+
+            loading = true;
+            const requestGeneration = generation;
+
+            try {
+                const response = await fetch(
+                    API_URL +
+                    "?offset=" + offset +
+                    "&limit=50"
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        "HTTP " + response.status
+                    );
+                }
+
+                const data = await response.json();
+
+                // Ignore requests completed after reset
+                if (requestGeneration !== generation) {
+                    return;
+                }
+
+                buffer.push(...data.transactions);
+                offset = data.next_offset;
+                total = data.total;
+                hasMore = data.has_more;
+
+            } catch (error) {
+                if (requestGeneration === generation) {
+                    pauseSimulation();
+                    setStatus("Data loading error");
+                    console.error(error);
+                }
+            } finally {
+                if (requestGeneration === generation) {
+                    loading = false;
+                }
+            }
+        }
+
+        function processTransaction(tx) {
+            processed++;
+
+            if (tx.actual_class === 1) {
+                fraud++;
+                alerts.unshift(tx);
+                alerts = alerts.slice(0, 10);
+                renderAlerts();
+            } else {
+                safe++;
+            }
+
+            queue.unshift(tx);
+            queue = queue.slice(0, 30);
+
+            updateStats();
+            renderQueue();
+
+            if (processed % 5 === 0) {
+                updateChart();
+            }
+        }
+
+        async function tick() {
+            if (!running) return;
+
+            if (buffer.length === 0) {
+                if (hasMore) {
+                    await fetchBatch();
+                }
+
+                if (!running) return;
+
+                if (buffer.length === 0 && !hasMore) {
+                    pauseSimulation();
+                    updateChart();
+                    setStatus("Replay complete");
+                    return;
+                }
+            }
+
+            const tx = buffer.shift();
+
+            if (tx) {
+                processTransaction(tx);
+            }
+
+            if (running) {
+                timer = setTimeout(
+                    tick,
+                    Number($("speedSelect").value)
+                );
+            }
+        }
+
+        function startSimulation() {
+            if (running) return;
+
+            if (!hasMore && buffer.length === 0) {
+                setStatus("Replay complete — reset to restart");
+                return;
+            }
+
+            running = true;
+            setStatus("Simulation running", true);
+            updateButtons();
+            tick();
+        }
+
+        function pauseSimulation() {
+            running = false;
+            clearTimeout(timer);
+            timer = null;
+
+            updateButtons();
+            updateChart();
+            setStatus("Paused");
+        }
+
+        function resetSimulation() {
+            running = false;
+            clearTimeout(timer);
+            timer = null;
+
+            generation++;
+            loading = false;
+
+            offset = 0;
+            total = 0;
+            processed = 0;
+            fraud = 0;
+            safe = 0;
+
+            queue = [];
+            alerts = [];
+            buffer = [];
+            hasMore = true;
+
+            if (chart) {
+                chart.data.labels = [];
+                chart.data.datasets.forEach(dataset => {
+                    dataset.data = [];
+                });
+                chart.update();
+            }
+
+            updateStats();
+            renderQueue();
+            renderAlerts();
+            updateButtons();
+
+            setStatus("Ready");
+        }
+
+        $("startBtn").addEventListener(
+            "click", startSimulation
+        );
+
+        $("pauseBtn").addEventListener(
+            "click", pauseSimulation
+        );
+
+        $("resetBtn").addEventListener(
+            "click", resetSimulation
+        );
+
+        resetSimulation();
+    </script>
+
+</body>
+
+</html>

@@ -4,203 +4,772 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#eef3f9">
+
     <title>Cost Optimizer | FraudGuard AI</title>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .cost-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .cost-stat {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+            min-height: 140px;
+            padding: 22px 20px;
+            background: #fff;
+            border: 1px solid #e1e9f4;
+            border-radius: 17px;
+            box-shadow: 0 5px 18px rgba(31, 75, 130, .06);
+        }
+
+        .cost-stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 49px;
+            width: 49px;
+            height: 49px;
+            border-radius: 14px;
+            background: #e8f2ff;
+            color: #2788f5;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .cost-stat-icon.red {
+            background: #fff0f1;
+            color: #ff3048;
+        }
+
+        .cost-stat-icon.green {
+            background: #e7f8ef;
+            color: #0f9f83;
+        }
+
+        .cost-stat-icon.purple {
+            background: #f0eaff;
+            color: #7057d9;
+        }
+
+        .cost-stat p {
+            margin: 0 0 9px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .cost-stat h2 {
+            margin: 0;
+            color: #172b4d;
+            font-size: clamp(20px, 1.8vw, 27px);
+            line-height: 1.3;
+            overflow-wrap: anywhere;
+        }
+
+        .cost-stat small {
+            display: block;
+            margin-top: 7px;
+            color: #8492a6;
+            font-size: 11px;
+        }
+
+        .cost-panels {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .cost-panel {
+            min-width: 0;
+            padding: 25px;
+            background: #fff;
+            border: 1px solid #e1e9f4;
+            border-radius: 17px;
+            box-shadow: 0 5px 18px rgba(31, 75, 130, .06);
+        }
+
+        .cost-panel h3 {
+            margin: 0 0 7px;
+            color: #172b4d;
+            font-size: 19px;
+        }
+
+        .panel-subtitle {
+            margin: 0 0 26px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .cost-control {
+            padding: 17px 0 23px;
+        }
+
+        .cost-control+.cost-control {
+            border-top: 1px solid #e5edf7;
+        }
+
+        .cost-control label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            color: #263f63;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .cost-control label strong {
+            color: #2563eb;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .control-description {
+            margin: 0 0 17px;
+            color: #7186a3;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .cost-control input[type="range"] {
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            accent-color: #3296f5;
+            cursor: pointer;
+        }
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 11px;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .cost-note,
+        .cost-summary {
+            margin-top: 23px;
+            padding: 17px;
+            background: #edf5ff;
+            border: 1px solid #d9e9ff;
+            border-radius: 12px;
+        }
+
+        .cost-note strong,
+        .cost-summary strong {
+            color: #185aa5;
+            font-size: 13px;
+        }
+
+        .cost-note p,
+        .cost-summary p {
+            margin: 7px 0 0;
+            color: #536b8a;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .cost-note p+p {
+            margin-top: 10px;
+        }
+
+        .cost-chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+
+        .cost-chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .back-link {
+            color: #2563eb;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .threshold-info {
+            margin-top: 18px;
+            padding: 16px;
+            border: 1px solid #e3eaf5;
+            border-radius: 12px;
+            background: #f8fbff;
+        }
+
+        .threshold-info h4 {
+            margin: 0 0 8px;
+            color: #172b4d;
+            font-size: 14px;
+        }
+
+        .threshold-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 1350px) {
+            .cost-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 950px) {
+            .cost-panels {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .cost-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .cost-stat {
+                min-height: auto;
+            }
+
+            .cost-panel {
+                padding: 18px;
+            }
+
+            .cost-chart-wrapper {
+                height: 280px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
+
         <h1>🛡 Fraud<span>Guard</span> AI</h1>
-        <p class="subtitle">Cost-Sensitive Fraud Detection</p>
+
+        <p class="subtitle">
+            Cost-Sensitive Fraud Detection
+        </p>
 
         <nav>
-            <a href="/">⌂ Overview</a>
-            <a href="/analytics">▥ Fraud Analytics</a>
-            <a href="/cost-optimizer" class="active">◎ Cost Optimizer</a>
-            <a href="/#pr-explorer">◉ PR Explorer</a>
-            <a href="/#simulator">▷ Live Simulator</a>
-            <a href="/#investigation">▤ Investigation Queue</a>
-            <a href="/#drift">⌁ Drift Monitor</a>
+            <a href="/">
+                ⌂ Overview
+            </a>
+
+            <a href="{{ url_for('analytics') }}">
+                ▥ Fraud Analytics
+            </a>
+
+            <a href="{{ url_for('cost_optimizer') }}" class="active" aria-current="page">
+                ◎ Cost Optimizer
+            </a>
+
+            <a href="{{ url_for('pr_explorer') }}">
+                ◉ PR Explorer
+            </a>
+
+            <a href="/live-simulator">
+                ▷ Live Simulator
+            </a>
+
+            <a href="/investigation-queue">
+                ▤ Investigation Queue
+            </a>
+
+            <a href="/drift-monitor">
+                ⌁ Drift Monitor
+            </a>
         </nav>
 
         <div class="dataset-info">
             <h3>Dataset Info</h3>
+
             <p>Credit Card Transactions</p>
-            <p>{{ "{:,}".format(stats.total) }} transactions</p>
-            <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
-            <p>{{ stats.fraud_rate }}% fraud rate</p>
+
+            <p>
+                {{ "{:,}".format(stats.total) }}
+                transactions
+            </p>
+
+            <p>
+                {{ "{:,}".format(stats.fraud) }}
+                fraud cases
+            </p>
+
+            <p>
+                {{ stats.fraud_rate }}% fraud rate
+            </p>
         </div>
+
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="main-content">
 
         <header class="page-header">
             <div>
                 <h1>Cost Optimizer</h1>
-                <p>Explore the financial trade-off between missed fraud and false alarms.</p>
+
+                <p>
+                    Explore the financial trade-off between
+                    missed fraud and false alarms.
+                </p>
             </div>
-            <a href="/" class="back-link">← Back to Overview</a>
+
+            <a href="/" class="back-link">
+                ← Back to Overview
+            </a>
         </header>
 
-        <section class="stats-grid">
-            <article class="stat-card">
-                <p>Total Transactions</p>
-                <h2>{{ "{:,}".format(stats.total) }}</h2>
+        <!-- KPI CARDS -->
+        <section class="cost-stats">
+
+            <article class="cost-stat">
+                <span class="cost-stat-icon">▤</span>
+
+                <div>
+                    <p>Total Transactions</p>
+
+                    <h2>
+                        {{ "{:,}".format(stats.total) }}
+                    </h2>
+
+                    <small>All dataset transactions</small>
+                </div>
             </article>
 
-            <article class="stat-card">
-                <p>Fraud Cases in Dataset</p>
-                <h2 style="color:#ed2338;">{{ "{:,}".format(stats.fraud) }}</h2>
+            <article class="cost-stat">
+                <span class="cost-stat-icon red">♟</span>
+
+                <div>
+                    <p>Fraud Cases in Dataset</p>
+
+                    <h2 style="color:#ff3048">
+                        {{ "{:,}".format(stats.fraud) }}
+                    </h2>
+
+                    <small>
+                        {{ stats.fraud_rate }}% fraud rate
+                    </small>
+                </div>
             </article>
 
-            <article class="stat-card">
-                <p>False Positive Cost</p>
-                <h2 id="fpCostDisplay">₹500</h2>
+            <article class="cost-stat">
+                <span class="cost-stat-icon green">$</span>
+
+                <div>
+                    <p>False Positive Cost</p>
+
+                    <h2 id="fpCostDisplay">$2</h2>
+
+                    <small>
+                        Assumed cost per false alarm
+                    </small>
+                </div>
             </article>
 
-            <article class="stat-card">
-                <p>False Negative Cost</p>
-                <h2 id="fnCostDisplay">₹5,000</h2>
+            <article class="cost-stat">
+                <span class="cost-stat-icon purple">$</span>
+
+                <div>
+                    <p>False Negative Cost</p>
+
+                    <h2 id="fnCostDisplay">$100</h2>
+
+                    <small>
+                        Assumed cost per missed fraud
+                    </small>
+                </div>
             </article>
+
         </section>
 
-        <section class="charts-grid">
+        <!-- COST PANELS -->
+        <section class="cost-panels">
 
-            <article class="chart-card">
+            <!-- LEFT PANEL -->
+            <article class="cost-panel">
+
                 <h3>Cost Assumptions</h3>
-                <p>Adjust the assumed cost of each error type.</p>
 
-                <div style="margin-top:25px;">
-                    <label for="fpCost">False Positive Cost (₹)</label>
-                    <input id="fpCost" type="range" min="0" max="5000" step="100" value="500"
-                        style="width:100%;margin:15px 0;">
-                    <p>Selected cost: <strong id="fpValue">₹500</strong></p>
-                </div>
+                <p class="panel-subtitle">
+                    Adjust the financial impact of
+                    classification errors and the
+                    fraud probability threshold.
+                </p>
 
-                <div style="margin-top:25px;">
-                    <label for="fnCost">False Negative Cost (₹)</label>
-                    <input id="fnCost" type="range" min="0" max="20000" step="500" value="5000"
-                        style="width:100%;margin:15px 0;">
-                    <p>Selected cost: <strong id="fnValue">₹5,000</strong></p>
-                </div>
+                <!-- FALSE POSITIVE COST -->
+                <div class="cost-control">
 
-                <div class="finding" style="margin-top:25px;">
-                    <div>
-                        <strong>Important</strong>
-                        <p>
-                            These are illustrative cost assumptions, not actual
-                            bank losses. The current app uses dataset labels,
-                            not model prediction scores, so it cannot yet
-                            calculate a real optimal detection threshold.
-                        </p>
+                    <label for="fpCost">
+                        False Positive Cost
+                        <strong id="fpValue">$2</strong>
+                    </label>
+
+                    <p class="control-description">
+                        Cost per genuine transaction
+                        incorrectly flagged as fraud.
+                    </p>
+
+                    <input id="fpCost" type="range" min="0" max="50" step="1" value="2">
+
+                    <div class="range-labels">
+                        <span>$0</span>
+                        <span>$25</span>
+                        <span>$50</span>
                     </div>
+
                 </div>
+
+                <!-- FALSE NEGATIVE COST -->
+                <div class="cost-control">
+
+                    <label for="fnCost">
+                        False Negative Cost
+                        <strong id="fnValue">$100</strong>
+                    </label>
+
+                    <p class="control-description">
+                        Illustrative flat cost per
+                        missed fraudulent transaction.
+                    </p>
+
+                    <input id="fnCost" type="range" min="0" max="500" step="10" value="100">
+
+                    <div class="range-labels">
+                        <span>$0</span>
+                        <span>$250</span>
+                        <span>$500</span>
+                    </div>
+
+                </div>
+
+                <!-- FRAUD PROBABILITY THRESHOLD -->
+                <div class="cost-control">
+
+                    <label for="fraudThreshold">
+                        Fraud Probability Threshold
+                        <strong id="thresholdValue">0.50</strong>
+                    </label>
+
+                    <p class="control-description">
+                        Controls when a predicted fraud
+                        probability is classified as fraud.
+                    </p>
+
+                    <input id="fraudThreshold" type="range" min="0" max="1" step="0.01" value="0.50">
+
+                    <div class="range-labels">
+                        <span>0.00</span>
+                        <span>0.50</span>
+                        <span>1.00</span>
+                    </div>
+
+                </div>
+
+                <!-- IMPORTANT NOTE -->
+                <div class="cost-note">
+
+                    <strong>ⓘ Important</strong>
+
+                    <p>
+                        These are illustrative USD business
+                        cost assumptions, not verified
+                        bank losses.
+                    </p>
+
+                    <p>
+                        The chart compares the assumed
+                        cost of one false positive
+                        against one false negative.
+                    </p>
+
+                    <p>
+                        A true optimal detection threshold
+                        requires model prediction probabilities,
+                        actual labels, and the resulting
+                        false-positive and false-negative counts.
+                    </p>
+
+                </div>
+
             </article>
 
-            <article class="chart-card">
+            <!-- RIGHT PANEL -->
+            <article class="cost-panel">
+
                 <h3>Estimated Error Cost</h3>
-                <p>Illustration based on the selected assumptions.</p>
 
-                <div class="chart-container">
-                    <canvas id="costChart"></canvas>
+                <p class="panel-subtitle">
+                    Comparison of assumed USD cost
+                    per classification error.
+                </p>
+
+                <div class="cost-chart-wrapper">
+                    <canvas id="costChart" aria-label="USD cost comparison chart">
+                    </canvas>
                 </div>
 
-                <div class="finding">
-                    <div>
-                        <strong>Illustrative scenario</strong>
-                        <p id="costSummary">
-                            Adjust the sliders to see how the assumed error costs change.
-                        </p>
-                    </div>
+                <div class="cost-summary">
+                    <strong>
+                        Financial Cost Comparison
+                    </strong>
+
+                    <p id="costSummary">
+                        Adjust the sliders to compare
+                        the assumed costs.
+                    </p>
                 </div>
+
+                <div class="threshold-info">
+                    <h4>
+                        Selected Detection Threshold
+                    </h4>
+
+                    <p id="thresholdExplanation">
+                        Current threshold: 0.50
+                    </p>
+                </div>
+
             </article>
 
         </section>
 
         <footer class="page-footer">
-            FraudGuard AI · Cost Optimizer
+            FraudGuard AI · Cost-Sensitive Fraud Detection
         </footer>
 
     </main>
 
+    <!-- JAVASCRIPT -->
     <script>
-        const fpInput = document.getElementById("fpCost");
-        const fnInput = document.getElementById("fnCost");
+        document.addEventListener("DOMContentLoaded", function () {
 
-        const fpValue = document.getElementById("fpValue");
-        const fnValue = document.getElementById("fnValue");
-        const fpDisplay = document.getElementById("fpCostDisplay");
-        const fnDisplay = document.getElementById("fnCostDisplay");
-        const summary = document.getElementById("costSummary");
+            const fpInput =
+                document.getElementById("fpCost");
 
-        const money = value => "₹" + Number(value).toLocaleString("en-IN");
+            const fnInput =
+                document.getElementById("fnCost");
 
-        const costChart = new Chart(
-            document.getElementById("costChart"),
-            {
-                type: "bar",
-                data: {
-                    labels: ["False Positive", "False Negative"],
-                    datasets: [{
-                        label: "Assumed cost per error",
-                        data: [500, 5000],
-                        backgroundColor: ["#92949e", "#ed2338"],
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: context => money(context.raw)
-                            }
-                        }
+            const thresholdInput =
+                document.getElementById("fraudThreshold");
+
+            const fpValue =
+                document.getElementById("fpValue");
+
+            const fnValue =
+                document.getElementById("fnValue");
+
+            const thresholdValue =
+                document.getElementById("thresholdValue");
+
+            const fpDisplay =
+                document.getElementById("fpCostDisplay");
+
+            const fnDisplay =
+                document.getElementById("fnCostDisplay");
+
+            const summary =
+                document.getElementById("costSummary");
+
+            const thresholdExplanation =
+                document.getElementById("thresholdExplanation");
+
+            const money = value =>
+                new Intl.NumberFormat("en-US", {
+                    style: "currency",
+                    currency: "USD",
+                    maximumFractionDigits: 0
+                }).format(value);
+
+            Chart.defaults.color = "#64748b";
+
+            Chart.defaults.font.family =
+                "'Segoe UI', Arial, sans-serif";
+
+            const costChart = new Chart(
+                document.getElementById("costChart"),
+                {
+                    type: "bar",
+
+                    data: {
+                        labels: [
+                            "False Positive",
+                            "False Negative"
+                        ],
+
+                        datasets: [{
+                            label: "Assumed cost per error (USD)",
+
+                            data: [2, 100],
+
+                            backgroundColor: [
+                                "#3296f5",
+                                "#ff3048"
+                            ],
+
+                            borderRadius: 7,
+                            maxBarThickness: 95
+                        }]
                     },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: value => money(value)
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+
+                        plugins: {
+                            legend: {
+                                display: false
                             },
-                            grid: {
-                                color: "rgba(255,255,255,0.08)"
+
+                            tooltip: {
+                                backgroundColor: "#172b4d",
+                                titleColor: "#ffffff",
+                                bodyColor: "#ffffff",
+                                padding: 12,
+                                cornerRadius: 10,
+
+                                callbacks: {
+                                    label: context =>
+                                        money(context.raw)
+                                }
+                            }
+                        },
+
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+
+                                ticks: {
+                                    color: "#64748b"
+                                }
+                            },
+
+                            y: {
+                                beginAtZero: true,
+
+                                grid: {
+                                    color: "#e9eef5"
+                                },
+
+                                border: {
+                                    display: false
+                                },
+
+                                ticks: {
+                                    color: "#64748b",
+
+                                    callback: value =>
+                                        money(value)
+                                }
                             }
                         }
                     }
                 }
+            );
+
+            function updateCosts() {
+
+                const fp = Number(fpInput.value);
+                const fn = Number(fnInput.value);
+
+                const threshold =
+                    Number(thresholdInput.value);
+
+                // UPDATE KPI CARDS
+                fpValue.textContent = money(fp);
+                fnValue.textContent = money(fn);
+
+                fpDisplay.textContent = money(fp);
+                fnDisplay.textContent = money(fn);
+
+                // UPDATE THRESHOLD
+                thresholdValue.textContent =
+                    threshold.toFixed(2);
+
+                // UPDATE CHART
+                costChart.data.datasets[0].data = [
+                    fp,
+                    fn
+                ];
+
+                costChart.update();
+
+                // COST COMPARISON
+                let comparison;
+
+                if (fp === 0) {
+                    comparison =
+                        "False-positive cost is set to zero.";
+                } else {
+                    const ratio = (fn / fp).toFixed(1);
+
+                    comparison =
+                        "One missed fraud costs approximately " +
+                        ratio +
+                        " times as much as one false alarm " +
+                        "under these assumptions.";
+                }
+
+                summary.textContent =
+                    "False Positive: " + money(fp) +
+                    " per error. False Negative: " +
+                    money(fn) +
+                    " per error. " +
+                    comparison +
+                    " This compares individual error costs, " +
+                    "not total dataset financial loss.";
+
+                // THRESHOLD DESCRIPTION
+                thresholdExplanation.textContent =
+                    "Selected threshold: " +
+                    threshold.toFixed(2) +
+                    ". A predicted fraud probability at or " +
+                    "above this value would be classified " +
+                    "as fraud. This slider currently " +
+                    "illustrates the decision rule; " +
+                    "it does not change the cost chart " +
+                    "without model prediction scores.";
             }
-        );
 
-        function updateCosts() {
-            const fp = Number(fpInput.value);
-            const fn = Number(fnInput.value);
+            // SLIDER EVENTS
+            fpInput.addEventListener("input", updateCosts);
 
-            fpValue.textContent = money(fp);
-            fnValue.textContent = money(fn);
-            fpDisplay.textContent = money(fp);
-            fnDisplay.textContent = money(fn);
+            fnInput.addEventListener("input", updateCosts);
 
-            costChart.data.datasets[0].data = [fp, fn];
-            costChart.update();
+            thresholdInput.addEventListener(
+                "input",
+                updateCosts
+            );
 
-            summary.textContent =
-                "Assumed false-positive cost: " + money(fp) +
-                " per error. Assumed false-negative cost: " + money(fn) +
-                " per error. These values compare individual error costs; " +
-                "they do not estimate total dataset losses.";
-        }
+            // INITIAL RENDER
+            updateCosts();
 
-        fpInput.addEventListener("input", updateCosts);
-        fnInput.addEventListener("input", updateCosts);
-        updateCosts();
+        });
     </script>
 
 </body>
