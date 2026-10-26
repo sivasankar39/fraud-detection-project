@@ -4,120 +4,524 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PR Explorer | FraudGuard AI</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <meta name="theme-color" content="#081733">
+    <title>3D PR Explorer | FraudGuard AI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        .pr-page {
-            color: #102b52;
+        :root {
+            --navy: #071632;
+            --blue: #317cff;
+            --cyan: #48d8ff;
+            --red: #ff456c;
+            --green: #00bc98;
+            --purple: #895bff;
+            --muted: #6980a9;
         }
 
-        .pr-page .page-header {
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font: 14px/1.55 "Segoe UI", Arial, sans-serif;
+            color: #10234c;
+            background:
+                radial-gradient(ellipse at 80% 5%, #b3d1ff, transparent 42%),
+                radial-gradient(ellipse at 20% 70%, #d4e4ff, transparent 50%),
+                linear-gradient(130deg, #edf5ff, #cddfff);
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: 260px;
+            padding: 24px 18px;
+            overflow-y: auto;
+            z-index: 20;
+            color: white;
+            background: linear-gradient(165deg, #102b61, #06112b 65%, #0c2457);
+            border-right: 1px solid #3263a0;
+            box-shadow: 12px 0 40px #0b28512a;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .brand-logo {
+            display: grid;
+            place-items: center;
+            width: 51px;
+            height: 51px;
+            flex-shrink: 0;
+            font-size: 27px;
+            border-radius: 16px;
+            border: 1px solid #86c8ff;
+            background: linear-gradient(140deg, #148eff, #7756ff);
+            box-shadow: 0 0 25px #288fff80;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 21px;
+            letter-spacing: -.8px
+        }
+
+        .brand h1 span {
+            color: #6dc9ff
+        }
+
+        .subtitle {
+            color: #a7bee8;
+            font-size: 11px;
+            margin: 8px 0 31px 63px;
+        }
+
+        .sidebar nav {
+            display: grid;
+            gap: 8px
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px;
+            min-height: 49px;
+            border-radius: 13px;
+            color: #b5c9ed;
+            transition: .25s;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            color: white;
+            background: linear-gradient(100deg, #087eff, #3655d4);
+            box-shadow: 0 8px 24px #126bff66;
+            transform: translateX(3px);
+        }
+
+        .nav-icon {
+            width: 23px;
+            text-align: center;
+            font-size: 19px
+        }
+
+        .dataset-info {
+            margin-top: 30px;
+            padding: 17px;
+            border-radius: 17px;
+            background: #3d7acc22;
+            border: 1px solid #7eb5ff33;
+        }
+
+        .dataset-info h3 {
+            margin: 0 0 12px
+        }
+
+        .dataset-info p {
+            margin: 8px 0;
+            color: #b7cbed;
+            font-size: 12px;
+        }
+
+        /* MAIN PAGE */
+        .main-content {
+            margin-left: 260px;
+            padding: 26px 32px 40px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .top-label,
+        .chip {
+            padding: 12px 17px;
+            border: 1px solid #ffffffdd;
+            background: #ffffff7a;
+            border-radius: 15px;
+            color: #5574a7;
+            backdrop-filter: blur(15px);
+        }
+
+        .top-label {
+            flex: 1;
+            max-width: 540px
+        }
+
+        .top-right {
+            display: flex;
+            gap: 10px
+        }
+
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: clamp(27px, 3vw, 38px);
+            letter-spacing: -1px;
+        }
+
+        .page-header p {
+            margin: 7px 0 0;
+            color: var(--muted);
+        }
+
+        .back-link {
+            display: inline-block;
+            padding: 11px 17px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 650;
+            background: linear-gradient(115deg, #1676ff, #4c5fe9);
+            box-shadow: 0 8px 22px #246bf540;
+        }
+
+        /* 3D HOLOGRAPHIC HERO */
+        .command {
+            position: relative;
+            isolation: isolate;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            min-height: 290px;
             margin-bottom: 26px;
+            overflow: hidden;
+            border-radius: 27px;
+            color: white;
+            background: linear-gradient(120deg, #102f6c, #071631 65%, #0b2555);
+            border: 1px solid #6faaff88;
+            box-shadow: 0 22px 55px #103b8b44, inset 0 1px #ffffff30;
         }
 
-        .pr-page .page-header h1 {
-            font-size: 34px;
-            margin-bottom: 8px;
+        .command::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(transparent 95%, #54aaff16 96%),
+                linear-gradient(90deg, transparent 95%, #54aaff13 96%);
+            background-size: 35px 35px;
+            opacity: .4;
+            pointer-events: none;
         }
 
-        .pr-page .page-header p,
-        .pr-muted {
-            color: #7185a3;
-            line-height: 1.6;
+        .command-copy {
+            position: relative;
+            z-index: 2;
+            padding: 32px;
         }
 
-        .pr-page .back-link {
-            color: #2463eb;
-            text-decoration: none;
-            white-space: nowrap;
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #6dcaff;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 2px;
         }
 
+        .pulse-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #1df4bd;
+            box-shadow: 0 0 16px #1df4bd;
+            animation: pulse 2s infinite;
+        }
+
+        .command h2 {
+            margin: 17px 0 12px;
+            font-size: clamp(27px, 3vw, 40px);
+            line-height: 1.2;
+            letter-spacing: -1px;
+        }
+
+        .command h2 span {
+            color: #72d3ff
+        }
+
+        .command-copy p {
+            max-width: 540px;
+            color: #adc5e9;
+            line-height: 1.8;
+        }
+
+        .command-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 21px;
+        }
+
+        .command-tags span {
+            padding: 10px 13px;
+            border: 1px solid #91c1ff3a;
+            background: #ffffff10;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #d2e8ff;
+        }
+
+        .command-art {
+            position: relative;
+            display: grid;
+            place-items: center;
+            min-height: 280px;
+            perspective: 900px;
+        }
+
+        .holo-orbit {
+            position: absolute;
+            width: 215px;
+            height: 215px;
+            border: 2px solid #5bbfff88;
+            border-radius: 50%;
+            transform: rotateX(65deg);
+            box-shadow: 0 0 25px #228dff55;
+            animation: orbit 10s linear infinite;
+        }
+
+        .holo-orbit.two {
+            width: 180px;
+            height: 180px;
+            border-style: dashed;
+            border-color: #a58bffbb;
+            animation-duration: 15s;
+            animation-direction: reverse;
+        }
+
+        .holo-core {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            place-items: center;
+            width: 140px;
+            height: 155px;
+            font-size: 62px;
+            font-weight: 800;
+            color: white;
+            background: radial-gradient(circle at 35% 20%, #267ee9, #0b2c76 70%);
+            border: 2px solid #79d5ff;
+            clip-path: polygon(50% 0, 94% 17%, 89% 68%, 50% 100%, 11% 68%, 6% 17%);
+            filter: drop-shadow(0 0 18px #168aff);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .art-caption {
+            position: absolute;
+            bottom: 16px;
+            color: #75e9d1;
+            font-size: 11px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: .35;
+                transform: scale(.7)
+            }
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotateX(65deg) rotateZ(0)
+            }
+
+            to {
+                transform: rotateX(65deg) rotateZ(360deg)
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotateY(-8deg)
+            }
+
+            50% {
+                transform: translateY(-14px) rotateY(8deg)
+            }
+        }
+
+        /* 3D KPI CARDS */
         .pr-kpi-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 20px;
-            margin-bottom: 26px;
-        }
-
-        .pr-kpi,
-        .pr-panel {
-            background: #ffffff;
-            border: 1px solid #e0e9f6;
-            border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(25, 60, 110, .05);
+            gap: 18px;
+            margin-bottom: 27px;
         }
 
         .pr-kpi {
-            padding: 25px;
-            border-top: 4px solid #3195f6;
+            --accent: var(--blue);
+            position: relative;
+            min-width: 0;
+            min-height: 180px;
+            padding: 24px;
+            overflow: hidden;
+            border: 1px solid white;
+            border-top: 4px solid var(--accent);
+            border-radius: 23px;
+            background: linear-gradient(145deg, #ffffffed, #eaf3ffcc);
+            box-shadow: 0 17px 35px #2c5ba626, inset 0 1px white;
+            transition: transform .3s, box-shadow .3s;
         }
 
         .pr-kpi.green {
-            border-top-color: #09a782;
+            --accent: var(--green)
         }
 
         .pr-kpi.purple {
-            border-top-color: #8864fa;
+            --accent: var(--purple)
         }
 
         .pr-kpi.red {
-            border-top-color: #ff3151;
+            --accent: var(--red)
+        }
+
+        .pr-kpi:hover {
+            transform: perspective(850px) translateY(-9px) rotateX(4deg);
+            box-shadow: 0 28px 55px #2458b53b;
+        }
+
+        .pr-kpi::after {
+            content: "";
+            position: absolute;
+            right: -45px;
+            top: -45px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #317cff26, transparent 70%);
+            pointer-events: none;
+        }
+
+        .stat-icon {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            margin-bottom: 12px;
+            border-radius: 13px;
+            font-size: 23px;
+            color: var(--accent);
+            background: #e4edff;
         }
 
         .pr-kpi p {
-            font-size: 13px;
-            color: #7185a3;
-            margin: 0 0 15px;
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 650;
         }
 
         .pr-kpi h2 {
-            font-size: 30px;
-            margin: 0 0 14px;
-            color: #102b52;
+            margin: 0 0 9px;
+            color: var(--accent);
+            font-size: clamp(23px, 2vw, 33px);
+            overflow-wrap: anywhere;
         }
 
         .pr-kpi small {
-            font-size: 12px;
-            color: #7185a3;
+            color: var(--muted);
+            font-size: 11px;
         }
 
+        /* CHART AND TARGET PANELS */
         .pr-content-grid {
             display: grid;
-            grid-template-columns: 1.4fr 1fr;
-            gap: 22px;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 20px;
             align-items: start;
         }
 
         .pr-panel {
-            padding: 28px;
             min-width: 0;
+            padding: 27px;
+            border: 1px solid white;
+            border-radius: 23px;
+            background: linear-gradient(145deg, #ffffffed, #eaf3ffcc);
+            backdrop-filter: blur(18px);
+            box-shadow: 0 17px 38px #2756a324;
+            transition: transform .3s, box-shadow .3s;
+        }
+
+        .pr-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 52px #2558ae36;
         }
 
         .pr-panel h3 {
-            font-size: 21px;
-            margin: 0 0 12px;
+            margin: 0 0 10px;
+            color: #0a204c;
+            font-size: 20px;
+        }
+
+        .pr-muted {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
         }
 
         .pr-chart-box {
             position: relative;
+            width: 100%;
             height: 410px;
             margin-top: 24px;
+            padding: 8px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff66, #dceaff33);
         }
 
+        .pr-chart-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .pr-note {
+            margin-top: 18px
+        }
+
+        /* TARGET EXPLORER */
         .pr-target {
-            background: #f5f9ff;
-            border: 1px solid #e0e9f6;
-            border-radius: 14px;
+            margin-top: 17px;
             padding: 19px;
-            margin-top: 16px;
+            border: 1px solid #d9e8ff;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f6faff, #e8f2ff);
         }
 
         .pr-target-header {
@@ -134,89 +538,165 @@
         }
 
         .pr-progress {
-            height: 9px;
-            background: #dfe8f5;
+            height: 10px;
+            margin: 17px 0 12px;
             border-radius: 10px;
             overflow: hidden;
-            margin: 16px 0 12px;
+            background: #dce8f9;
+            box-shadow: inset 0 2px 4px #2458a41c;
         }
 
         .pr-progress-fill {
             height: 100%;
             width: 0;
-            background: #3195f6;
             border-radius: 10px;
-            transition: width .3s ease;
+            background: linear-gradient(90deg, #317cff, #48d8ff);
+            box-shadow: 0 0 12px #317cff66;
+            transition: width .4s ease;
+        }
+
+        .pr-target:nth-of-type(3) .pr-progress-fill {
+            background: linear-gradient(90deg, #00bc98, #59e4cb);
+        }
+
+        .pr-target:nth-of-type(4) .pr-progress-fill {
+            background: linear-gradient(90deg, #895bff, #c0a4ff);
         }
 
         .pr-target small {
-            color: #7185a3;
-        }
-
-        .pr-bottom {
-            margin-top: 24px;
+            color: var(--muted);
+            font-size: 11px;
         }
 
         .pr-status {
-            background: #eef5ff;
-            border: 1px solid #d8e7ff;
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 20px;
-            line-height: 1.6;
+            margin-top: 21px;
+            padding: 18px;
+            border: 1px solid #d6e7ff;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #edf5ff, #e2efff);
+        }
+
+        .pr-status strong {
+            color: #185aa5;
+        }
+
+        .pr-status p {
+            margin: 8px 0 0;
+            color: #536b8a;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .pr-bottom {
+            margin-top: 25px
         }
 
         .pr-info-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 17px;
             margin-top: 18px;
         }
 
-        .pr-info-grid div {
-            background: #f5f9ff;
-            border-radius: 12px;
+        .pr-info-grid>div {
             padding: 20px;
+            border: 1px solid #d9e8ff;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f6faff, #e8f2ff);
+        }
+
+        .pr-info-grid h4 {
+            margin: 0 0 8px;
+            color: #164c9e;
+            font-size: 15px;
         }
 
         .pr-info-grid p {
-            color: #7185a3;
-            line-height: 1.7;
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
         }
 
-        .pr-note {
-            margin-top: 18px;
-            font-size: 13px;
+        .page-footer {
+            padding-top: 28px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
         }
 
-        @media (max-width: 1200px) {
+        /* RESPONSIVE */
+        @media(max-width:1350px) {
             .pr-kpi-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media(max-width:1100px) {
+            .command {
+                grid-template-columns: 1fr
             }
 
             .pr-content-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr
             }
         }
 
-        @media (max-width: 650px) {
+        @media(max-width:900px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .sidebar nav {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 22px 18px;
+            }
+        }
+
+        @media(max-width:550px) {
 
             .pr-kpi-grid,
-            .pr-info-grid {
+            .pr-info-grid,
+            .sidebar nav {
                 grid-template-columns: 1fr;
             }
 
-            .pr-page .page-header {
-                flex-direction: column;
-                align-items: flex-start;
+            .topbar,
+            .top-right {
+                flex-wrap: wrap
+            }
+
+            .command-copy {
+                padding: 23px
             }
 
             .pr-panel {
-                padding: 18px;
+                padding: 19px
             }
 
             .pr-chart-box {
-                height: 320px;
+                height: 310px
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            .pulse-dot,
+            .holo-orbit,
+            .holo-core {
+                animation: none
+            }
+
+            .pr-kpi,
+            .pr-panel,
+            .pr-progress-fill {
+                transition: none
             }
         }
     </style>
@@ -226,69 +706,135 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">🛡️</div>
+            <h1>Fraud<span>Guard</span> AI</h1>
+        </div>
 
-        <h1>🛡 Fraud<span>Guard</span> AI</h1>
-        <p class="subtitle">Cost-Sensitive Fraud Detection</p>
+        <p class="subtitle">Intelligent Fraud Detection</p>
 
-        <nav>
-            <a href="/">⌂ Overview</a>
-            <a href="/analytics">▥ Fraud Analytics</a>
-            <a href="/cost-optimizer">◎ Cost Optimizer</a>
-            <a href="/pr-explorer" class="active">◉ PR Explorer</a>
-            <a href="/#simulator">▷ Live Simulator</a>
-            <a href="/#investigation">▤ Investigation Queue</a>
-            <a href="/#drift">⌁ Drift Monitor</a>
+        <nav aria-label="Main navigation">
+            <a href="/">
+                <span class="nav-icon">⌂</span> Dashboard
+            </a>
+
+            <a href="/analytics">
+                <span class="nav-icon">▥</span> Fraud Analytics
+            </a>
+
+            <a href="/cost-optimizer">
+                <span class="nav-icon">◎</span> Cost Optimizer
+            </a>
+
+            <a href="/pr-explorer" class="active" aria-current="page">
+                <span class="nav-icon">◉</span> PR Explorer
+            </a>
+
+            <a href="/live-simulator">
+                <span class="nav-icon">▶</span> Live Simulator
+            </a>
+
+            <a href="/investigation-queue">
+                <span class="nav-icon">▤</span> Investigation Queue
+            </a>
+
+            <a href="/drift-monitor">
+                <span class="nav-icon">⌁</span> Drift Monitor
+            </a>
         </nav>
 
         <div class="dataset-info">
-            <h3>Dataset Info</h3>
+            <h3>📊 Dataset Information</h3>
             <p>Credit Card Transactions</p>
             <p>{{ "{:,}".format(stats.total) }} transactions</p>
             <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
             <p>{{ stats.fraud_rate }}% fraud rate</p>
         </div>
-
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="main-content pr-page">
+    <main class="main-content">
+
+        <div class="topbar">
+            <div class="top-label">✦ AI-Powered Model Performance Analytics</div>
+            <div class="top-right">
+                <span class="chip" id="dateDisplay">PR Analysis</span>
+                <span class="chip">🛡 FraudGuard AI</span>
+            </div>
+        </div>
 
         <header class="page-header">
             <div>
                 <h1>Precision–Recall Explorer</h1>
                 <p>
-                    Evaluate fraud detection performance
-                    across precision and recall targets.
+                    Evaluate fraud detection performance across
+                    precision and recall targets.
                 </p>
             </div>
 
-            <a href="/" class="back-link">
-                ← Back to Overview
-            </a>
+            <a href="/" class="back-link">← Back to Overview</a>
         </header>
+
+        <!-- HOLOGRAPHIC HERO -->
+        <section class="command">
+            <div class="command-copy">
+                <div class="eyebrow">
+                    <span class="pulse-dot"></span>
+                    MODEL PERFORMANCE INTELLIGENCE
+                </div>
+
+                <h2>
+                    Measure Detection Quality.<br>
+                    <span>Explore Precision & Recall.</span>
+                </h2>
+
+                <p>
+                    Analyze how model precision and recall change
+                    across classification thresholds. Understand the
+                    trade-off between detecting fraud and reducing false alarms.
+                </p>
+
+                <div class="command-tags">
+                    <span>◈ Average Precision</span>
+                    <span>◎ Recall Targets</span>
+                    <span>▥ PR Curve Analysis</span>
+                </div>
+            </div>
+
+            <div class="command-art">
+                <div class="holo-orbit"></div>
+                <div class="holo-orbit two"></div>
+                <div class="holo-core" aria-hidden="true">PR</div>
+                <div class="art-caption">● MODEL PERFORMANCE ANALYSIS</div>
+            </div>
+        </section>
 
         <!-- KPI CARDS -->
         <section class="pr-kpi-grid">
 
             <article class="pr-kpi">
+                <div class="stat-icon">◈</div>
                 <p>Average Precision</p>
                 <h2 id="apValue">N/A</h2>
                 <small>Stepwise area under the PR curve</small>
             </article>
 
             <article class="pr-kpi green">
+                <div class="stat-icon">↗</div>
                 <p>Best Recall at 90% Precision</p>
                 <h2 id="recall90">N/A</h2>
                 <small>Minimum 90% precision target</small>
             </article>
 
             <article class="pr-kpi purple">
+                <div class="stat-icon">◎</div>
                 <p>Best Recall at 95% Precision</p>
                 <h2 id="recall95">N/A</h2>
                 <small>Minimum 95% precision target</small>
             </article>
 
             <article class="pr-kpi red">
+                <div class="stat-icon">✦</div>
                 <p>Best Recall at 99% Precision</p>
                 <h2 id="recall99">N/A</h2>
                 <small>Minimum 99% precision target</small>
@@ -296,36 +842,33 @@
 
         </section>
 
-        <!-- CHART AND TARGETS -->
+        <!-- PRECISION RECALL CHART AND TARGETS -->
         <section class="pr-content-grid">
 
             <article class="pr-panel">
-
                 <h3>Precision–Recall Curve</h3>
                 <p class="pr-muted">
-                    Model precision against recall across
-                    available classification thresholds.
+                    Model precision against recall across available
+                    classification thresholds.
                 </p>
 
                 <div class="pr-chart-box">
-                    <canvas id="prChart"></canvas>
+                    <canvas id="prChart" aria-label="Precision–Recall curve"></canvas>
                 </div>
 
                 <p class="pr-muted pr-note">
-                    Higher precision means fewer false alarms.
-                    Higher recall means more fraudulent
+                    Higher precision means fewer false alarms among predicted
+                    fraud cases. Higher recall means more actual fraudulent
                     transactions are detected.
                 </p>
-
             </article>
 
             <article class="pr-panel">
-
                 <h3>Precision Target Explorer</h3>
 
                 <p class="pr-muted">
-                    Maximum observed recall while maintaining
-                    at least the selected precision target.
+                    Maximum observed recall while maintaining at least
+                    the selected precision target.
                 </p>
 
                 <div class="pr-target">
@@ -333,14 +876,10 @@
                         <span>90% Precision</span>
                         <strong id="target90">N/A</strong>
                     </div>
-
                     <div class="pr-progress">
                         <div class="pr-progress-fill" id="bar90"></div>
                     </div>
-
-                    <small>
-                        Recall achievable at ≥90% precision.
-                    </small>
+                    <small>Recall achievable at ≥90% precision.</small>
                 </div>
 
                 <div class="pr-target">
@@ -348,14 +887,10 @@
                         <span>95% Precision</span>
                         <strong id="target95">N/A</strong>
                     </div>
-
                     <div class="pr-progress">
                         <div class="pr-progress-fill" id="bar95"></div>
                     </div>
-
-                    <small>
-                        Recall achievable at ≥95% precision.
-                    </small>
+                    <small>Recall achievable at ≥95% precision.</small>
                 </div>
 
                 <div class="pr-target">
@@ -363,28 +898,24 @@
                         <span>99% Precision</span>
                         <strong id="target99">N/A</strong>
                     </div>
-
                     <div class="pr-progress">
                         <div class="pr-progress-fill" id="bar99"></div>
                     </div>
-
-                    <small>
-                        Recall achievable at ≥99% precision.
-                    </small>
+                    <small>Recall achievable at ≥99% precision.</small>
                 </div>
 
                 <div class="pr-status">
                     <strong>Model Status</strong>
-                    <p id="prStatus">Checking model results...</p>
+                    <p id="prStatus" aria-live="polite">
+                        Checking model results...
+                    </p>
                 </div>
-
             </article>
 
         </section>
 
         <!-- EXPLANATION -->
         <section class="pr-panel pr-bottom">
-
             <h3>Understanding Model Performance</h3>
 
             <div class="pr-info-grid">
@@ -393,8 +924,8 @@
                     <h4>Precision</h4>
                     <p>
                         Of all transactions predicted as fraud,
-                        precision measures the proportion
-                        that are actually fraudulent.
+                        precision measures the proportion that
+                        are actually fraudulent.
                     </p>
                 </div>
 
@@ -410,23 +941,22 @@
                 <div>
                     <h4>Average Precision</h4>
                     <p>
-                        Summarizes the Precision–Recall curve
-                        using a stepwise weighted average
-                        of precision across recall changes.
+                        Summarizes the Precision–Recall curve using
+                        a stepwise weighted average of precision
+                        across recall changes.
                     </p>
                 </div>
 
                 <div>
                     <h4>Business Impact</h4>
                     <p>
-                        Higher precision reduces unnecessary
-                        fraud alerts, while higher recall
-                        reduces missed fraudulent transactions.
+                        Higher precision reduces unnecessary fraud
+                        alerts, while higher recall reduces
+                        missed fraudulent transactions.
                     </p>
                 </div>
 
             </div>
-
         </section>
 
         <footer class="page-footer">
@@ -435,15 +965,31 @@
 
     </main>
 
-    <!-- DATA FROM FLASK -->
-    <script>
-        window.PR_DATA = {{ pr_data | tojson }};
-    </script>
+    <!-- FLASK DATA -->
+    <script id="pr-json" type="application/json">
+{{ pr_data | default({}, true) | tojson }}
+</script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            "use strict";
 
-            const data = window.PR_DATA || {};
+            const $ = id => document.getElementById(id);
+
+            $("dateDisplay").textContent =
+                new Date().toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric"
+                });
+
+            let data = {};
+
+            try {
+                data = JSON.parse($("pr-json").textContent || "{}");
+            } catch (error) {
+                console.error("PR data JSON error:", error);
+            }
 
             const precision = Array.isArray(data.precision)
                 ? data.precision.map(Number)
@@ -468,7 +1014,7 @@
             const formatPercent = value =>
                 (value * 100).toFixed(2) + "%";
 
-            // Average Precision from Flask backend
+            // AVERAGE PRECISION FROM FLASK
             const ap = data.average_precision;
 
             if (
@@ -478,11 +1024,11 @@
                 Number(ap) >= 0 &&
                 Number(ap) <= 1
             ) {
-                document.getElementById("apValue").textContent =
+                $("apValue").textContent =
                     formatPercent(Number(ap));
             }
 
-            // Best recall at minimum precision target
+            // BEST RECALL AT MINIMUM PRECISION TARGET
             function bestRecall(target) {
                 const eligible = points.filter(
                     point => point.y >= target
@@ -504,17 +1050,11 @@
                     ? "N/A"
                     : formatPercent(value);
 
-                document.getElementById(
-                    "recall" + suffix
-                ).textContent = text;
+                $("recall" + suffix).textContent = text;
+                $("target" + suffix).textContent = text;
 
-                document.getElementById(
-                    "target" + suffix
-                ).textContent = text;
-
-                document.getElementById(
-                    "bar" + suffix
-                ).style.width = value === null
+                $("bar" + suffix).style.width =
+                    value === null
                         ? "0%"
                         : (value * 100) + "%";
             }
@@ -523,30 +1063,31 @@
             updateTarget(0.95, "95");
             updateTarget(0.99, "99");
 
-            // Model status
-            const status = document.getElementById("prStatus");
+            // MODEL STATUS
+            const status = $("prStatus");
 
-            status.textContent = data.status ||
-                "Model results unavailable.";
+            status.textContent =
+                data.status || "Model results unavailable.";
 
             if (!data.model_available) {
                 status.textContent +=
                     " Saved model file not found.";
             }
 
-            // Precision-Recall chart
-            const canvas = document.getElementById("prChart");
+            // PRECISION–RECALL CHART
+            const canvas = $("prChart");
 
             if (points.length > 0 && typeof Chart !== "undefined") {
 
                 new Chart(canvas, {
                     type: "line",
+
                     data: {
                         datasets: [{
                             label: "Precision–Recall",
                             data: points,
-                            borderColor: "#3195f6",
-                            backgroundColor: "rgba(49,149,246,0.10)",
+                            borderColor: "#317cff",
+                            backgroundColor: "rgba(49,124,255,.12)",
                             borderWidth: 3,
                             pointRadius: 0,
                             pointHoverRadius: 5,
@@ -554,15 +1095,18 @@
                             tension: 0
                         }]
                     },
+
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         parsing: false,
+
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
+
                             tooltip: {
+                                backgroundColor: "#10234c",
+                                padding: 12,
                                 callbacks: {
                                     label: context =>
                                         "Recall: " +
@@ -572,6 +1116,7 @@
                                 }
                             }
                         },
+
                         scales: {
                             x: {
                                 type: "linear",
@@ -579,29 +1124,34 @@
                                 max: 1,
                                 title: {
                                     display: true,
-                                    text: "Recall"
+                                    text: "Recall",
+                                    color: "#24416a"
                                 },
                                 ticks: {
+                                    color: "#6980a9",
                                     callback: value =>
                                         Math.round(value * 100) + "%"
                                 },
                                 grid: {
-                                    color: "#e6edf7"
+                                    color: "rgba(83,124,191,.13)"
                                 }
                             },
+
                             y: {
                                 min: 0,
                                 max: 1,
                                 title: {
                                     display: true,
-                                    text: "Precision"
+                                    text: "Precision",
+                                    color: "#24416a"
                                 },
                                 ticks: {
+                                    color: "#6980a9",
                                     callback: value =>
                                         Math.round(value * 100) + "%"
                                 },
                                 grid: {
-                                    color: "#e6edf7"
+                                    color: "rgba(83,124,191,.13)"
                                 }
                             }
                         }

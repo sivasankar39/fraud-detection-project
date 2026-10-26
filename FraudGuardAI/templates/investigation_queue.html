@@ -3,213 +3,571 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#071632">
     <title>Investigation Queue | FraudGuard AI</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
     <style>
-        .iq-page {
-            padding-bottom: 40px;
-            color: #102c54;
+        :root {
+            --blue: #317cff;
+            --cyan: #48d8ff;
+            --red: #ff456c;
+            --green: #00bc98;
+            --amber: #f59e0b;
+            --purple: #895bff;
+            --muted: #6980a9
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font: 14px/1.6 "Segoe UI", Arial, sans-serif;
+            color: #10234c;
+            background: radial-gradient(ellipse at 85% 0, #b6d1ff, transparent 42%),
+                linear-gradient(130deg, #edf5ff, #cddfff)
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit
+        }
+
+        button {
+            cursor: pointer
+        }
+
+        .sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: 260px;
+            z-index: 20;
+            padding: 24px 18px;
+            overflow-y: auto;
+            color: #fff;
+            background: linear-gradient(165deg, #102b61, #06112b 65%, #0c2457);
+            border-right: 1px solid #3263a0;
+            box-shadow: 12px 0 40px #0b28512a
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 51px;
+            height: 51px;
+            flex-shrink: 0;
+            border-radius: 16px;
+            font-size: 27px;
+            background: linear-gradient(140deg, #148eff, #7756ff);
+            border: 1px solid #86c8ff;
+            box-shadow: 0 0 25px #288fff80
+        }
+
+        .brand h1 {
+            font-size: 21px;
+            letter-spacing: -.8px;
+            margin: 0
+        }
+
+        .brand h1 span {
+            color: #6dc9ff
+        }
+
+        .subtitle {
+            color: #a7bee8;
+            font-size: 11px;
+            margin: 8px 0 31px 63px
+        }
+
+        .sidebar nav {
+            display: grid;
+            gap: 8px
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px;
+            border-radius: 13px;
+            color: #b5c9ed;
+            transition: .25s
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            color: #fff;
+            background: linear-gradient(100deg, #087eff, #3655d4);
+            box-shadow: 0 8px 24px #126bff66;
+            transform: translateX(3px)
+        }
+
+        .nav-icon {
+            width: 23px;
+            text-align: center;
+            font-size: 19px
+        }
+
+        .dataset-info {
+            margin-top: 30px;
+            padding: 17px;
+            border-radius: 17px;
+            background: #3d7acc22;
+            border: 1px solid #7eb5ff33
+        }
+
+        .dataset-info h3 {
+            margin: 0 0 12px
+        }
+
+        .dataset-info p {
+            margin: 8px 0;
+            color: #b7cbed;
+            font-size: 12px
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 26px 32px 40px;
+            min-height: 100vh
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 25px
+        }
+
+        .top-label,
+        .chip {
+            padding: 12px 17px;
+            border: 1px solid #ffffffdd;
+            background: #ffffff7a;
+            border-radius: 15px;
+            color: #5574a7;
+            backdrop-filter: blur(15px)
+        }
+
+        .top-label {
+            flex: 1;
+            max-width: 540px
         }
 
         .iq-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 26px;
+            gap: 18px;
+            margin-bottom: 24px
         }
 
         .iq-header h1 {
-            font-size: 32px;
-            margin: 0 0 8px;
+            margin: 0;
+            font-size: clamp(27px, 3vw, 38px);
+            letter-spacing: -1px
         }
 
         .iq-muted {
-            color: #7890ae;
-            font-size: 14px;
-            line-height: 1.6;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.8;
+            margin: 7px 0
         }
 
         .iq-tag {
-            padding: 10px 15px;
-            border-radius: 30px;
-            background: #eaf2ff;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 17px;
+            border-radius: 15px;
+            background: #ffffffc9;
+            border: 1px solid #fff;
             color: #2463eb;
-            font-weight: 700;
+            font-weight: 750;
             font-size: 12px;
+            box-shadow: 0 10px 25px #2458a41a
         }
 
+        /* 3D HOLOGRAPHIC HERO */
+        .command {
+            position: relative;
+            isolation: isolate;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            min-height: 275px;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border-radius: 27px;
+            color: white;
+            background: linear-gradient(120deg, #102f6c, #071631 65%, #0b2555);
+            border: 1px solid #6faaff88;
+            box-shadow: 0 22px 55px #103b8b44, inset 0 1px #ffffff30
+        }
+
+        .command:before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: .4;
+            pointer-events: none;
+            background: linear-gradient(transparent 95%, #54aaff16 96%),
+                linear-gradient(90deg, transparent 95%, #54aaff13 96%);
+            background-size: 35px 35px
+        }
+
+        .command-copy {
+            position: relative;
+            z-index: 2;
+            padding: 32px
+        }
+
+        .eyebrow {
+            color: #6dcaff;
+            font-size: 11px;
+            font-weight: 750;
+            letter-spacing: 2px
+        }
+
+        .command h2 {
+            font-size: clamp(28px, 3vw, 40px);
+            line-height: 1.2;
+            letter-spacing: -1px;
+            margin: 17px 0 12px
+        }
+
+        .command h2 span {
+            color: #72d3ff
+        }
+
+        .command-copy p {
+            color: #adc5e9;
+            max-width: 540px;
+            line-height: 1.8
+        }
+
+        .command-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 21px
+        }
+
+        .command-tags span {
+            padding: 9px 13px;
+            border: 1px solid #91c1ff3a;
+            background: #ffffff10;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #d2e8ff
+        }
+
+        .command-art {
+            position: relative;
+            display: grid;
+            place-items: center;
+            min-height: 260px;
+            perspective: 900px
+        }
+
+        .holo-orbit {
+            position: absolute;
+            width: 215px;
+            height: 215px;
+            border: 2px solid #5bbfff88;
+            border-radius: 50%;
+            box-shadow: 0 0 25px #228dff55;
+            animation: orbit 10s linear infinite
+        }
+
+        .holo-orbit.two {
+            width: 180px;
+            height: 180px;
+            border-style: dashed;
+            border-color: #a58bffbb;
+            animation-duration: 15s;
+            animation-direction: reverse
+        }
+
+        .holo-core {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            place-items: center;
+            width: 145px;
+            height: 155px;
+            font-size: 65px;
+            background: radial-gradient(circle at 35% 20%, #267ee9, #0b2c76 70%);
+            border: 2px solid #79d5ff;
+            clip-path: polygon(50% 0, 94% 17%, 89% 68%, 50% 100%, 11% 68%, 6% 17%);
+            filter: drop-shadow(0 0 18px #168aff);
+            animation: float 4s ease-in-out infinite
+        }
+
+        .art-caption {
+            position: absolute;
+            bottom: 14px;
+            color: #75e9d1;
+            font-size: 11px;
+            letter-spacing: 1px;
+            font-weight: 700
+        }
+
+        @keyframes orbit {
+            from {
+                transform: rotateX(65deg) rotateZ(0)
+            }
+
+            to {
+                transform: rotateX(65deg) rotateZ(360deg)
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-14px)
+            }
+        }
+
+        /* KPI CARDS */
         .iq-kpis {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 18px;
-            margin-bottom: 24px;
+            margin-bottom: 24px
         }
 
         .iq-card,
         .iq-panel {
-            background: #fff;
-            border: 1px solid #e1eaf5;
-            border-radius: 18px;
-            box-shadow: 0 5px 20px rgba(20, 65, 110, .04);
+            background: linear-gradient(145deg, #ffffffed, #eaf3ffcc);
+            border: 1px solid white;
+            border-radius: 23px;
+            box-shadow: 0 17px 38px #2756a324, inset 0 1px white;
+            backdrop-filter: blur(18px)
         }
 
         .iq-card {
+            --accent: var(--blue);
+            min-width: 0;
             padding: 23px;
-            border-top: 4px solid #3187ff;
+            border-top: 4px solid var(--accent);
+            transition: transform .3s, box-shadow .3s
         }
 
-        .iq-card:nth-child(2) {
-            border-top-color: #ef476f;
+        .iq-card.critical {
+            --accent: var(--red)
         }
 
-        .iq-card:nth-child(3) {
-            border-top-color: #f59e0b;
+        .iq-card.pending {
+            --accent: var(--amber)
         }
 
-        .iq-card:nth-child(4) {
-            border-top-color: #10b981;
+        .iq-card.resolved {
+            --accent: var(--green)
+        }
+
+        .iq-card:hover {
+            transform: perspective(850px) translateY(-8px) rotateX(4deg);
+            box-shadow: 0 28px 55px #2458b53b
+        }
+
+        .iq-card-icon {
+            display: grid;
+            place-items: center;
+            width: 44px;
+            height: 44px;
+            margin-bottom: 13px;
+            border-radius: 13px;
+            background: #e4edff;
+            color: var(--accent);
+            font-size: 23px
         }
 
         .iq-card p {
-            color: #7b90ab;
-            font-size: 13px;
-            margin: 0 0 15px;
+            margin: 0 0 9px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 650
         }
 
         .iq-card h2 {
-            font-size: 30px;
             margin: 0;
+            color: var(--accent);
+            font-size: clamp(24px, 2vw, 33px);
+            overflow-wrap: anywhere
         }
 
+        .iq-card small {
+            color: var(--muted);
+            font-size: 11px
+        }
+
+        /* WORKSPACE */
         .iq-panel {
-            padding: 24px;
+            padding: 27px;
             margin-bottom: 22px;
+            min-width: 0;
+            transition: box-shadow .3s
+        }
+
+        .iq-panel:hover {
+            box-shadow: 0 25px 52px #2558ae36
         }
 
         .iq-panel h3 {
-            font-size: 20px;
             margin: 0 0 8px;
+            font-size: 20px;
+            color: #0a204c
         }
 
         .iq-toolbar {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
             gap: 12px;
-            margin-top: 22px;
+            align-items: center;
+            margin-top: 23px
         }
 
         .iq-input,
         .iq-select,
         .iq-notes {
-            padding: 12px 14px;
-            border: 1px solid #dce6f2;
-            border-radius: 10px;
+            width: 100%;
+            min-width: 0;
+            padding: 13px 15px;
+            border: 1px solid #d3e2f7;
+            border-radius: 12px;
             background: #fff;
             color: #15345e;
-            font: inherit;
+            outline: none
         }
 
-        .iq-input {
-            flex: 1;
-            min-width: 190px;
-        }
-
-        .iq-select {
-            min-width: 140px;
+        .iq-input:focus,
+        .iq-select:focus,
+        .iq-notes:focus {
+            border-color: #317cff;
+            box-shadow: 0 0 0 3px #317cff20
         }
 
         .iq-btn {
             border: 0;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 12px 18px;
-            background: #2463eb;
+            background: linear-gradient(110deg, #1676ff, #5659e8);
             color: #fff;
-            font-weight: 700;
-            cursor: pointer;
+            font-weight: 750;
+            white-space: nowrap;
+            box-shadow: 0 8px 20px #246bf52b;
+            transition: .2s
         }
 
         .iq-btn.secondary {
-            background: #edf3fc;
+            background: #e2ecfb;
             color: #2759a4;
+            box-shadow: none
         }
 
-        .iq-btn:hover {
-            filter: brightness(.96);
+        .iq-btn:hover:not(:disabled) {
+            transform: translateY(-2px)
+        }
+
+        .iq-btn:disabled {
+            opacity: .4;
+            cursor: not-allowed
         }
 
         .iq-table-wrap {
             overflow-x: auto;
-            margin-top: 20px;
+            margin-top: 22px;
+            border-radius: 15px
         }
 
         .iq-table {
             width: 100%;
-            min-width: 780px;
-            border-collapse: collapse;
+            min-width: 790px;
+            border-collapse: collapse
         }
 
         .iq-table th {
-            background: #f3f7ff;
-            color: #7187a5;
+            background: #e8f1ff;
+            color: #5574a7;
             text-align: left;
-            padding: 15px;
-            font-size: 12px;
+            padding: 16px;
+            font-size: 12px
         }
 
         .iq-table td {
             padding: 15px;
-            border-bottom: 1px solid #edf2f8;
+            border-bottom: 1px solid #dce8f7;
             font-size: 13px;
+            vertical-align: middle
         }
 
         .iq-table tbody tr:hover {
-            background: #f8fbff;
+            background: #eaf3ff99
         }
 
         .iq-badge {
             display: inline-block;
             border-radius: 20px;
-            padding: 6px 10px;
-            font-size: 12px;
-            font-weight: 700;
+            padding: 6px 11px;
+            font-size: 11px;
+            font-weight: 750
         }
 
         .iq-badge.Critical {
             background: #ffe4e9;
-            color: #c92349;
+            color: #c92349
         }
 
         .iq-badge.High {
             background: #fff0db;
-            color: #b96800;
+            color: #b96800
         }
 
         .iq-badge.Medium {
             background: #fff6d9;
-            color: #946700;
+            color: #946700
         }
 
         .iq-badge.Low {
             background: #e6f4ff;
-            color: #2364b7;
+            color: #2364b7
         }
 
         .iq-status {
-            padding: 8px;
-            border: 1px solid #dce6f2;
-            border-radius: 8px;
+            padding: 9px;
+            border: 1px solid #d3e2f7;
+            border-radius: 9px;
             color: #183c68;
             background: white;
+            max-width: 150px
         }
 
         .iq-empty {
-            padding: 28px;
+            padding: 28px !important;
             text-align: center;
-            color: #8ba0b9;
+            color: #8ba0b9
         }
 
         .iq-footer {
@@ -217,91 +575,164 @@
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            margin-top: 18px;
-            color: #7890ae;
-            font-size: 13px;
+            margin-top: 20px;
+            color: var(--muted);
+            font-size: 12px
         }
 
+        .iq-pagination {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .iq-note {
+            padding: 15px 17px;
+            margin-top: 20px;
+            border-radius: 13px;
+            border: 1px solid #d6e7ff;
+            background: #edf5ff;
+            color: #536b8a;
+            font-size: 12px;
+            line-height: 1.8
+        }
+
+        /* CASE DETAIL MODAL */
         .iq-modal {
             position: fixed;
             inset: 0;
-            background: rgba(15, 35, 65, .5);
+            z-index: 1000;
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
             padding: 16px;
+            background: #071632b8;
+            backdrop-filter: blur(9px)
         }
 
         .iq-modal.open {
-            display: flex;
+            display: flex
         }
 
         .iq-dialog {
-            background: white;
-            width: min(100%, 500px);
-            border-radius: 18px;
-            padding: 28px;
+            width: min(100%, 540px);
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            border-radius: 24px;
+            color: #10234c;
+            background: linear-gradient(145deg, #fff, #e8f2ff);
+            border: 1px solid #fff;
+            box-shadow: 0 35px 100px #020c2f88
         }
 
         .iq-dialog h2 {
-            margin-top: 0;
+            margin: 0 0 8px;
+            font-size: 25px
         }
 
         .iq-detail {
-            margin: 12px 0;
+            margin: 10px 0;
+            padding: 10px 13px;
+            border-radius: 10px;
+            background: #ffffffaa;
             color: #607998;
+            font-size: 13px
         }
 
         .iq-notes {
             display: block;
-            width: 100%;
-            min-height: 100px;
-            box-sizing: border-box;
+            min-height: 115px;
             resize: vertical;
-            margin: 14px 0;
+            margin: 12px 0 20px
+        }
+
+        .iq-dialog label {
+            font-weight: 700;
+            color: #23456f
         }
 
         .iq-dialog-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 10px
         }
 
-        @media(max-width: 1100px) {
+        .page-footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        @media(max-width:1250px) {
             .iq-kpis {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .iq-toolbar {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
             }
         }
 
-        @media(max-width: 650px) {
-            .iq-kpis {
-                grid-template-columns: 1fr;
+        @media(max-width:1000px) {
+            .command {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:900px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto
             }
 
-            .iq-header {
-                flex-direction: column;
-                align-items: flex-start;
+            .sidebar nav {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 22px 18px
+            }
+        }
+
+        @media(max-width:550px) {
+
+            .iq-kpis,
+            .iq-toolbar,
+            .sidebar nav {
+                grid-template-columns: 1fr
+            }
+
+            .iq-header,
+            .topbar,
+            .iq-footer {
+                flex-wrap: wrap
             }
 
             .iq-panel {
-                padding: 16px;
+                padding: 18px
+            }
+
+            .command-copy {
+                padding: 23px
+            }
+
+            .iq-pagination {
+                flex-wrap: wrap
             }
         }
 
-        @media (min-width: 1100px) {
-            .iq-toolbar {
-                display: grid;
-                grid-template-columns: 2fr 1fr 1fr auto;
-                align-items: center;
-                gap: 12px;
+        @media(prefers-reduced-motion:reduce) {
+
+            .holo-orbit,
+            .holo-core {
+                animation: none
             }
 
-            .iq-input,
-            .iq-select {
-                width: 100%;
-                min-width: 0;
-                box-sizing: border-box;
+            .iq-card {
+                transition: none
             }
         }
     </style>
@@ -310,23 +741,24 @@
 <body>
 
     <aside class="sidebar">
-        <h1>🛡 Fraud<span>Guard</span> AI</h1>
-        <p class="subtitle">Cost-Sensitive Fraud Detection</p>
-
-        <nav>
-            <a href="/">⌂ Overview</a>
-            <a href="/analytics">▥ Fraud Analytics</a>
-            <a href="/cost-optimizer">◎ Cost Optimizer</a>
-            <a href="/pr-explorer">◉ PR Explorer</a>
-            <a href="/live-simulator">▷ Live Simulator</a>
-            <a href="/investigation-queue" class="active">
-                ▤ Investigation Queue
+        <div class="brand">
+            <div class="brand-icon">🛡️</div>
+            <h1>Fraud<span>Guard</span> AI</h1>
+        </div>
+        <p class="subtitle">Intelligent Fraud Detection</p>
+        <nav aria-label="Main navigation">
+            <a href="/"><span class="nav-icon">⌂</span>Dashboard</a>
+            <a href="/analytics"><span class="nav-icon">▥</span>Fraud Analytics</a>
+            <a href="/cost-optimizer"><span class="nav-icon">◎</span>Cost Optimizer</a>
+            <a href="/pr-explorer"><span class="nav-icon">◉</span>PR Explorer</a>
+            <a href="/live-simulator"><span class="nav-icon">▶</span>Live Simulator</a>
+            <a href="/investigation-queue" class="active" aria-current="page">
+                <span class="nav-icon">▤</span>Investigation Queue
             </a>
-            <a href="/#drift">⌁ Drift Monitor</a>
+            <a href="/drift-monitor"><span class="nav-icon">⌁</span>Drift Monitor</a>
         </nav>
-
         <div class="dataset-info">
-            <h3>Dataset Info</h3>
+            <h3>📊 Dataset Information</h3>
             <p>Credit Card Transactions</p>
             <p>{{ "{:,}".format(stats.total) }} transactions</p>
             <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
@@ -334,50 +766,92 @@
         </div>
     </aside>
 
-    <main class="main-content iq-page">
+    <main class="main-content">
+        <div class="topbar">
+            <div class="top-label">✦ Fraud Investigation Intelligence Workspace</div>
+            <div class="chip" id="dateDisplay">Investigation Queue</div>
+        </div>
 
         <header class="iq-header">
             <div>
                 <h1>Investigation Queue</h1>
                 <p class="iq-muted">
-                    Review labeled fraud cases, prioritize investigations
+                    Review labeled fraud cases, prioritize investigations,
                     and track case resolution.
                 </p>
             </div>
-            <span class="iq-tag">Ground-Truth Demo Queue</span>
+            <span class="iq-tag">◈ Ground-Truth Demo Queue</span>
         </header>
+
+        <section class="command">
+            <div class="command-copy">
+                <div class="eyebrow">● CASE INVESTIGATION COMMAND CENTER</div>
+                <h2>Investigate Every Case.<br>
+                    <span>Prioritize What Matters.</span>
+                </h2>
+                <p>
+                    Explore historical fraud cases, organize review priorities,
+                    update investigation statuses, and document findings
+                    in one interactive workspace.
+                </p>
+                <div class="command-tags">
+                    <span>◈ Priority Triage</span>
+                    <span>◎ Case Resolution</span>
+                    <span>▤ Investigation Notes</span>
+                </div>
+            </div>
+            <div class="command-art">
+                <div class="holo-orbit"></div>
+                <div class="holo-orbit two"></div>
+                <div class="holo-core" aria-hidden="true">▤</div>
+                <div class="art-caption">● CASE REVIEW WORKSPACE</div>
+            </div>
+        </section>
 
         <section class="iq-kpis">
             <article class="iq-card">
+                <div class="iq-card-icon">▤</div>
                 <p>Total Cases</p>
                 <h2 id="totalCases">0</h2>
+                <small>Available investigation records</small>
             </article>
-            <article class="iq-card">
+            <article class="iq-card critical">
+                <div class="iq-card-icon">⚑</div>
                 <p>Critical Priority</p>
                 <h2 id="criticalCases">0</h2>
+                <small>Amount-based priority classification</small>
             </article>
-            <article class="iq-card">
+            <article class="iq-card pending">
+                <div class="iq-card-icon">◷</div>
                 <p>Pending Review</p>
                 <h2 id="pendingCases">0</h2>
+                <small>Cases awaiting review</small>
             </article>
-            <article class="iq-card">
+            <article class="iq-card resolved">
+                <div class="iq-card-icon">✓</div>
                 <p>Resolved Cases</p>
                 <h2 id="resolvedCases">0</h2>
+                <small>Cases marked as resolved</small>
             </article>
         </section>
 
         <section class="iq-panel">
             <h3>Fraud Investigation Workspace</h3>
             <p class="iq-muted">
-                Priorities are based on transaction amount, not
-                predicted fraud probability. Status and notes are
-                stored in this browser only.
+                Search, filter, review and document historical fraud cases.
             </p>
 
-            <div class="iq-toolbar">
-                <input class="iq-input" id="searchInput" placeholder="Search transaction ID...">
+            <div class="iq-note">
+                <strong>Demo data:</strong> Priorities are based on transaction
+                amount, not predicted fraud probability. Statuses and notes
+                are stored locally in this browser only.
+            </div>
 
-                <select class="iq-select" id="priorityFilter">
+            <div class="iq-toolbar">
+                <input class="iq-input" id="searchInput" placeholder="Search transaction ID..."
+                    aria-label="Search transaction ID">
+
+                <select class="iq-select" id="priorityFilter" aria-label="Filter by priority">
                     <option value="All">All Priorities</option>
                     <option value="Critical">Critical</option>
                     <option value="High">High</option>
@@ -385,15 +859,15 @@
                     <option value="Low">Low</option>
                 </select>
 
-                <select class="iq-select" id="statusFilter">
+                <select class="iq-select" id="statusFilter" aria-label="Filter by status">
                     <option value="All">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Reviewing">Reviewing</option>
                     <option value="Resolved">Resolved</option>
                 </select>
 
-                <button class="iq-btn" id="exportBtn">
-                    Export CSV
+                <button type="button" class="iq-btn" id="exportBtn">
+                    ↓ Export CSV
                 </button>
             </div>
 
@@ -421,38 +895,38 @@
 
             <div class="iq-footer">
                 <span id="resultCount">0 cases</span>
-                <div>
-                    <button class="iq-btn secondary" id="prevBtn">
-                        Previous
-                    </button>
+                <div class="iq-pagination">
+                    <button type="button" class="iq-btn secondary" id="prevBtn">Previous</button>
                     <span id="pageLabel">Page 1</span>
-                    <button class="iq-btn secondary" id="nextBtn">
-                        Next
-                    </button>
+                    <button type="button" class="iq-btn secondary" id="nextBtn">Next</button>
                 </div>
             </div>
         </section>
 
+        <footer class="page-footer">
+            FraudGuard AI · Investigation Queue
+        </footer>
     </main>
 
     <div class="iq-modal" id="detailModal">
         <div class="iq-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
             <h2 id="modalTitle">Case Details</h2>
+            <p class="iq-muted">Transaction investigation record</p>
             <div id="caseDetails"></div>
 
             <label for="caseNotes">Investigation Notes</label>
             <textarea class="iq-notes" id="caseNotes" placeholder="Enter investigation notes..."></textarea>
 
             <div class="iq-dialog-actions">
-                <button class="iq-btn secondary" id="closeModal">Cancel</button>
-                <button class="iq-btn" id="saveNotes">
-                    Save Notes
-                </button>
+                <button type="button" class="iq-btn secondary" id="closeModal">Cancel</button>
+                <button type="button" class="iq-btn" id="saveNotes">Save Notes</button>
             </div>
         </div>
     </div>
 
     <script>
+        "use strict";
+
         const API = "/api/investigation-queue";
         const STORAGE_KEY = "fraudguard_investigations_v1";
         const PAGE_SIZE = 12;
@@ -461,24 +935,26 @@
         let saved = {};
         let currentPage = 1;
         let activeCaseId = null;
+        let previousFocus = null;
 
         const $ = id => document.getElementById(id);
+        const formatNumber = value => Number(value).toLocaleString("en-US");
+
+        $("dateDisplay").textContent = new Date().toLocaleDateString(
+            "en-US", { year: "numeric", month: "short", day: "numeric" }
+        );
 
         try {
-            const parsed = JSON.parse(
-                localStorage.getItem(STORAGE_KEY) || "{}"
-            );
-            saved = parsed && typeof parsed === "object" ? parsed : {};
+            const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+            saved = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+                ? parsed : {};
         } catch {
             saved = {};
         }
 
         function persist() {
             try {
-                localStorage.setItem(
-                    STORAGE_KEY,
-                    JSON.stringify(saved)
-                );
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
             } catch (error) {
                 console.warn("Could not save browser data", error);
             }
@@ -489,13 +965,16 @@
         }
 
         function updateStats() {
-            $("totalCases").textContent = cases.length;
-            $("criticalCases").textContent =
-                cases.filter(c => c.priority === "Critical").length;
-            $("pendingCases").textContent =
-                cases.filter(c => getStatus(c.id) === "Pending").length;
-            $("resolvedCases").textContent =
-                cases.filter(c => getStatus(c.id) === "Resolved").length;
+            $("totalCases").textContent = formatNumber(cases.length);
+            $("criticalCases").textContent = formatNumber(
+                cases.filter(c => c.priority === "Critical").length
+            );
+            $("pendingCases").textContent = formatNumber(
+                cases.filter(c => getStatus(c.id) === "Pending").length
+            );
+            $("resolvedCases").textContent = formatNumber(
+                cases.filter(c => getStatus(c.id) === "Resolved").length
+            );
         }
 
         function filteredCases() {
@@ -503,34 +982,31 @@
             const priority = $("priorityFilter").value;
             const status = $("statusFilter").value;
 
-            return cases.filter(c => {
-                return String(c.id).toLowerCase().includes(query)
-                    && (priority === "All" || c.priority === priority)
-                    && (status === "All" || getStatus(c.id) === status);
-            });
+            return cases.filter(c =>
+                String(c.id).toLowerCase().includes(query) &&
+                (priority === "All" || c.priority === priority) &&
+                (status === "All" || getStatus(c.id) === status)
+            );
         }
 
         function renderTable() {
             const filtered = filteredCases();
-            const pageCount = Math.max(
-                1, Math.ceil(filtered.length / PAGE_SIZE)
-            );
+            const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
-            currentPage = Math.min(currentPage, pageCount);
+            currentPage = Math.max(1, Math.min(currentPage, pageCount));
 
             const start = (currentPage - 1) * PAGE_SIZE;
             const visible = filtered.slice(start, start + PAGE_SIZE);
             const body = $("caseBody");
-
             body.replaceChildren();
 
             if (!visible.length) {
                 const row = document.createElement("tr");
-                const cell = document.createElement("td");
-                cell.colSpan = 6;
-                cell.className = "iq-empty";
-                cell.textContent = "No matching cases found.";
-                row.appendChild(cell);
+                const td = document.createElement("td");
+                td.colSpan = 6;
+                td.className = "iq-empty";
+                td.textContent = "No matching cases found.";
+                row.appendChild(td);
                 body.appendChild(row);
             }
 
@@ -557,6 +1033,7 @@
                 const statusCell = document.createElement("td");
                 const select = document.createElement("select");
                 select.className = "iq-status";
+                select.setAttribute("aria-label", "Status for case " + c.id);
 
                 for (const value of ["Pending", "Reviewing", "Resolved"]) {
                     const option = document.createElement("option");
@@ -582,19 +1059,18 @@
 
                 const actionCell = document.createElement("td");
                 const button = document.createElement("button");
+                button.type = "button";
                 button.className = "iq-btn secondary";
                 button.textContent = "View Details";
                 button.addEventListener("click", () => openDetails(c.id));
 
                 actionCell.appendChild(button);
                 row.appendChild(actionCell);
-
                 body.appendChild(row);
             }
 
             $("resultCount").textContent =
-                filtered.length + " matching cases";
-
+                formatNumber(filtered.length) + " matching cases";
             $("pageLabel").textContent =
                 "Page " + currentPage + " of " + pageCount;
 
@@ -603,10 +1079,12 @@
         }
 
         function openDetails(id) {
-            const c = cases.find(item => item.id === id);
+            const c = cases.find(item => String(item.id) === String(id));
             if (!c) return;
 
-            activeCaseId = id;
+            previousFocus = document.activeElement;
+            activeCaseId = c.id;
+
             const container = $("caseDetails");
             container.replaceChildren();
 
@@ -626,13 +1104,20 @@
                 container.appendChild(line);
             }
 
-            $("caseNotes").value = saved[id]?.notes || "";
+            $("caseNotes").value = saved[c.id]?.notes || "";
             $("detailModal").classList.add("open");
+            document.body.style.overflow = "hidden";
+            $("caseNotes").focus();
         }
 
         function closeDetails() {
             $("detailModal").classList.remove("open");
+            document.body.style.overflow = "";
             activeCaseId = null;
+            if (previousFocus && previousFocus.isConnected) {
+                previousFocus.focus();
+            }
+            previousFocus = null;
         }
 
         $("closeModal").addEventListener("click", closeDetails);
@@ -642,7 +1127,28 @@
         });
 
         document.addEventListener("keydown", event => {
-            if (event.key === "Escape") closeDetails();
+            if (!$("detailModal").classList.contains("open")) return;
+
+            if (event.key === "Escape") {
+                closeDetails();
+                return;
+            }
+
+            if (event.key === "Tab") {
+                const controls = [
+                    $("caseNotes"), $("closeModal"), $("saveNotes")
+                ];
+                const first = controls[0];
+                const last = controls[controls.length - 1];
+
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            }
         });
 
         $("saveNotes").addEventListener("click", () => {
@@ -657,11 +1163,7 @@
             closeDetails();
         });
 
-        for (const id of [
-            "searchInput",
-            "priorityFilter",
-            "statusFilter"
-        ]) {
+        for (const id of ["searchInput", "priorityFilter", "statusFilter"]) {
             $(id).addEventListener(
                 id === "searchInput" ? "input" : "change",
                 () => {
@@ -679,9 +1181,7 @@
         });
 
         $("nextBtn").addEventListener("click", () => {
-            const maxPage = Math.ceil(
-                filteredCases().length / PAGE_SIZE
-            );
+            const maxPage = Math.ceil(filteredCases().length / PAGE_SIZE);
             if (currentPage < maxPage) {
                 currentPage++;
                 renderTable();
@@ -689,37 +1189,40 @@
         });
 
         $("exportBtn").addEventListener("click", () => {
-            const rows = [
-                ["Transaction ID", "Elapsed Time", "Amount",
-                    "Priority", "Status", "Notes"]
-            ];
+            const rows = [[
+                "Transaction ID", "Elapsed Time", "Amount",
+                "Priority", "Status", "Notes"
+            ]];
 
             for (const c of filteredCases()) {
                 rows.push([
-                    c.id,
-                    c.time,
-                    c.amount,
-                    c.priority,
-                    getStatus(c.id),
-                    saved[c.id]?.notes || ""
+                    c.id, c.time, c.amount, c.priority,
+                    getStatus(c.id), saved[c.id]?.notes || ""
                 ]);
             }
 
+            // Escape quotes and prevent spreadsheet formula interpretation.
             const csv = rows.map(row =>
-                row.map(value =>
-                    '"' + String(value).replaceAll('"', '""') + '"'
-                ).join(",")
+                row.map(value => {
+                    let text = String(value ?? "");
+                    if (/^[\s]*[=+\-@\t\r]/.test(text)) {
+                        text = "'" + text;
+                    }
+                    return '"' + text.replaceAll('"', '""') + '"';
+                }).join(",")
             ).join("\r\n");
 
-            const blob = new Blob(
-                [csv], { type: "text/csv;charset=utf-8;" }
-            );
-
+            const blob = new Blob(["\uFEFF", csv], {
+                type: "text/csv;charset=utf-8;"
+            });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
+
             link.href = url;
             link.download = "fraudguard_investigation_queue.csv";
+            document.body.appendChild(link);
             link.click();
+            link.remove();
 
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         });
@@ -727,21 +1230,38 @@
         async function loadCases() {
             try {
                 const response = await fetch(API);
+
                 if (!response.ok) {
                     throw new Error("HTTP " + response.status);
                 }
 
                 const data = await response.json();
-                cases = data.cases || [];
 
+                if (!Array.isArray(data.cases)) {
+                    throw new Error("Invalid investigation API response");
+                }
+
+                cases = data.cases;
                 updateStats();
                 renderTable();
+
             } catch (error) {
                 console.error(error);
-                $("caseBody").innerHTML =
-                    '<tr><td colspan="6" class="iq-empty">' +
-                    'Unable to load investigation cases.' +
-                    '</td></tr>';
+
+                const body = $("caseBody");
+                body.replaceChildren();
+
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+                cell.colSpan = 6;
+                cell.className = "iq-empty";
+                cell.textContent = "Unable to load investigation cases.";
+
+                row.appendChild(cell);
+                body.appendChild(row);
+                $("resultCount").textContent = "Unable to load cases";
+                $("prevBtn").disabled = true;
+                $("nextBtn").disabled = true;
             }
         }
 
