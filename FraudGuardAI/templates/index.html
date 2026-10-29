@@ -3,14 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FraudGuard AI | 3D Command Center</title>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
             --navy: #071632;
-            --blue: #317cff;
+            --blue: #287aff;
             --cyan: #48d8ff;
             --red: #ff456c;
             --green: #00c79c;
@@ -19,11 +20,11 @@
         }
 
         * {
-            box-sizing: border-box
+            box-sizing: border-box;
         }
 
         html {
-            scroll-behavior: smooth
+            scroll-behavior: smooth;
         }
 
         body {
@@ -39,12 +40,14 @@
 
         a {
             text-decoration: none;
-            color: inherit
+            color: inherit;
         }
 
         button {
-            font: inherit
+            font: inherit;
         }
+
+        /* SIDEBAR */
 
         .sidebar {
             position: fixed;
@@ -62,7 +65,7 @@
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px
+            gap: 12px;
         }
 
         .brand-logo {
@@ -80,22 +83,22 @@
         .brand h1 {
             margin: 0;
             font-size: 21px;
-            letter-spacing: -.8px
+            letter-spacing: -.8px;
         }
 
         .brand h1 span {
-            color: #6dc9ff
+            color: #6dc9ff;
         }
 
         .tagline {
             color: #a7bee8;
             font-size: 11px;
-            margin: 8px 0 31px 63px
+            margin: 8px 0 31px 63px;
         }
 
         .sidebar nav {
             display: grid;
-            gap: 8px
+            gap: 8px;
         }
 
         .sidebar nav a {
@@ -105,7 +108,10 @@
             padding: 13px;
             border-radius: 13px;
             color: #b5c9ed;
-            transition: background .25s, transform .25s, box-shadow .25s;
+            transition:
+                background .25s,
+                transform .25s,
+                box-shadow .25s;
         }
 
         .sidebar nav a:hover,
@@ -119,7 +125,7 @@
         .nav-icon {
             width: 23px;
             text-align: center;
-            font-size: 19px
+            font-size: 19px;
         }
 
         .dataset {
@@ -131,19 +137,21 @@
         }
 
         .dataset h3 {
-            margin: 0 0 12px
+            margin: 0 0 12px;
         }
 
         .dataset p {
             font-size: 12px;
             color: #b7cbed;
-            margin: 8px 0
+            margin: 8px 0;
         }
+
+        /* MAIN LAYOUT */
 
         .main {
             margin-left: 260px;
             padding: 26px 32px 35px;
-            min-height: 100vh
+            min-height: 100vh;
         }
 
         .topbar {
@@ -166,12 +174,12 @@
 
         .top-label {
             flex: 1;
-            max-width: 540px
+            max-width: 540px;
         }
 
         .top-right {
             display: flex;
-            gap: 10px
+            gap: 10px;
         }
 
         .header {
@@ -185,12 +193,12 @@
         .header h1 {
             font-size: clamp(27px, 3vw, 38px);
             margin: 0;
-            letter-spacing: -1px
+            letter-spacing: -1px;
         }
 
         .header p {
             margin: 7px 0 0;
-            color: var(--muted)
+            color: var(--muted);
         }
 
         .loaded {
@@ -207,10 +215,11 @@
         .loaded::before {
             content: "●";
             margin-right: 9px;
-            color: #00c99b
+            color: #00c99b;
         }
 
         /* 3D COMMAND CENTER */
+
         .command {
             display: grid;
             grid-template-columns: 1.35fr 1fr;
@@ -222,18 +231,22 @@
             border-radius: 27px;
             background: linear-gradient(120deg, #102f6c, #071631 65%, #0b2555);
             border: 1px solid #6faaff88;
-            box-shadow: 0 22px 55px #103b8b44, inset 0 1px #ffffff30;
+            box-shadow:
+                0 22px 55px #103b8b44,
+                inset 0 1px #ffffff30;
         }
 
         .command::before {
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(transparent 95%, #54aaff16 96%),
+            background:
+                linear-gradient(transparent 95%, #54aaff16 96%),
                 linear-gradient(90deg, transparent 95%, #54aaff13 96%);
             background-size: 35px 35px;
             opacity: .4;
-            transform: perspective(600px) rotateX(20deg) scale(1.4);
+            transform:
+                perspective(600px) rotateX(20deg) scale(1.4);
             pointer-events: none;
         }
 
@@ -253,7 +266,7 @@
         .command-copy {
             position: relative;
             z-index: 2;
-            padding: 35px
+            padding: 35px;
         }
 
         .eyebrow {
@@ -294,14 +307,14 @@
         .command-copy>p {
             max-width: 530px;
             color: #adc5e9;
-            line-height: 1.8
+            line-height: 1.8;
         }
 
         .command-stats {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-            margin-top: 23px
+            margin-top: 23px;
         }
 
         .command-stat {
@@ -325,11 +338,11 @@
             display: block;
             color: white;
             font-size: 24px;
-            margin-top: 3px
+            margin-top: 3px;
         }
 
         .command-stat .danger {
-            color: #ff688a
+            color: #ff688a;
         }
 
         .command-art {
@@ -350,7 +363,9 @@
             border: 2px solid #43c7ff88;
             border-radius: 50%;
             transform: rotateX(65deg);
-            box-shadow: 0 0 28px #208dff99, inset 0 0 30px #208dff55;
+            box-shadow:
+                0 0 28px #208dff99,
+                inset 0 0 30px #208dff55;
         }
 
         .holo-platform::after {
@@ -392,8 +407,11 @@
             background: radial-gradient(circle at 35% 20%, #267ee9, #0b2c76 70%);
             border: 2px solid #79d5ff;
             border-radius: 40% 40% 46% 46%;
-            clip-path: polygon(50% 0, 94% 17%, 89% 68%, 50% 100%, 11% 68%, 6% 17%);
-            box-shadow: 0 0 50px #168aff99, inset 0 0 30px #8bdcff44;
+            clip-path: polygon(50% 0, 94% 17%, 89% 68%,
+                    50% 100%, 11% 68%, 6% 17%);
+            box-shadow:
+                0 0 50px #168aff99,
+                inset 0 0 30px #8bdcff44;
             font-size: 70px;
             color: white;
             text-shadow: 0 0 20px #bceaff;
@@ -405,7 +423,8 @@
             position: absolute;
             inset: 10px;
             border: 1px solid #a1e6ff88;
-            clip-path: polygon(50% 0, 94% 17%, 89% 68%, 50% 100%, 11% 68%, 6% 17%);
+            clip-path: polygon(50% 0, 94% 17%, 89% 68%,
+                    50% 100%, 11% 68%, 6% 17%);
         }
 
         .art-caption {
@@ -420,23 +439,23 @@
         @keyframes pulse {
             50% {
                 opacity: .35;
-                transform: scale(.7)
+                transform: scale(.7);
             }
         }
 
         @keyframes spin {
             to {
-                transform: rotate(360deg)
+                transform: rotate(360deg);
             }
         }
 
         @keyframes orbit {
             from {
-                transform: rotateX(65deg) rotateZ(0)
+                transform: rotateX(65deg) rotateZ(0);
             }
 
             to {
-                transform: rotateX(65deg) rotateZ(360deg)
+                transform: rotateX(65deg) rotateZ(360deg);
             }
         }
 
@@ -444,15 +463,16 @@
 
             0%,
             100% {
-                transform: translateY(0) rotateY(-8deg)
+                transform: translateY(0) rotateY(-8deg);
             }
 
             50% {
-                transform: translateY(-15px) rotateY(8deg)
+                transform: translateY(-15px) rotateY(8deg);
             }
         }
 
-        /* 3D GLASS KPI CARDS */
+        /* KPI CARDS */
+
         .kpis {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -468,13 +488,16 @@
             border-radius: 23px;
             background: linear-gradient(145deg, #ffffffdc, #eaf3ffb9);
             border: 1px solid white;
-            box-shadow: 0 16px 32px #3466b024, inset 0 1px #fff;
+            box-shadow:
+                0 16px 32px #3466b024,
+                inset 0 1px #fff;
             transform-style: preserve-3d;
             transition: transform .3s, box-shadow .3s;
         }
 
         .kpi:hover {
-            transform: translateY(-9px) perspective(800px) rotateX(3deg);
+            transform:
+                translateY(-9px) perspective(800px) rotateX(3deg);
             box-shadow: 0 28px 55px #285ebf44;
         }
 
@@ -506,7 +529,7 @@
         .kpi p {
             color: var(--muted);
             font-size: 12px;
-            margin: 0 0 5px
+            margin: 0 0 5px;
         }
 
         .kpi h2 {
@@ -520,12 +543,14 @@
             display: block;
             color: var(--muted);
             margin-top: 9px;
-            font-size: 11px
+            font-size: 11px;
         }
+
+        /* ANALYTICS PANELS */
 
         .section-title {
             font-size: 21px;
-            margin: 0 0 18px
+            margin: 0 0 18px;
         }
 
         .charts {
@@ -553,32 +578,41 @@
 
         .panel h3 {
             font-size: 18px;
-            margin: 0 0 7px
+            margin: 0 0 7px;
         }
 
         .panel>p {
             font-size: 12px;
             color: var(--muted);
-            margin: 0 0 18px
+            margin: 0 0 18px;
         }
 
         .chart-box {
             position: relative;
             height: 310px;
-            width: 100%
+            width: 100%;
         }
 
         .chart-box canvas {
             width: 100% !important;
-            height: 100% !important
+            height: 100% !important;
         }
 
         .panel.wide {
-            grid-column: 1/-1
+            grid-column: 1 / -1;
         }
 
+        .chart-note {
+            text-align: center;
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        /* KEY FINDINGS */
+
         .findings h3 {
-            margin-bottom: 15px
+            margin-bottom: 15px;
         }
 
         .finding {
@@ -590,7 +624,7 @@
         }
 
         .finding:last-child {
-            border-bottom: 0
+            border-bottom: 0;
         }
 
         .number {
@@ -605,100 +639,99 @@
         }
 
         .finding strong {
-            font-size: 13px
+            font-size: 13px;
         }
 
         .finding p {
             color: var(--muted);
             font-size: 12px;
-            margin: 5px 0 0
+            margin: 5px 0 0;
         }
 
         footer {
             text-align: center;
             color: var(--muted);
             padding: 25px 0 5px;
-            font-size: 12px
+            font-size: 12px;
         }
 
-        @media(max-width:1300px) {
+        /* RESPONSIVE */
+
+        @media (max-width: 1300px) {
             .kpis {
-                grid-template-columns: repeat(2, minmax(0, 1fr))
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
-        @media(max-width:1050px) {
+        @media (max-width: 1050px) {
             .command {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
 
             .command-art {
-                min-height: 280px
+                min-height: 280px;
             }
 
             .charts {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
 
             .panel.wide {
-                grid-column: auto
+                grid-column: auto;
             }
         }
 
-        @media(max-width:850px) {
+        @media (max-width: 850px) {
             .sidebar {
                 position: relative;
-                width: 100%
+                width: 100%;
             }
 
             .sidebar nav {
-                grid-template-columns: repeat(2, 1fr)
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .main {
                 margin-left: 0;
-                padding: 22px
+                padding: 22px;
             }
         }
 
-        @media(max-width:550px) {
+        @media (max-width: 550px) {
 
             .kpis,
             .sidebar nav {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
 
             .header {
                 flex-direction: column;
-                align-items: flex-start
+                align-items: flex-start;
             }
 
-            .topbar {
-                flex-wrap: wrap
-            }
-
+            .topbar,
             .top-right {
-                flex-wrap: wrap
+                flex-wrap: wrap;
             }
 
             .command-copy {
-                padding: 23px
+                padding: 23px;
             }
 
             .command-stat {
-                flex: 1
+                flex: 1;
             }
 
             .panel {
-                padding: 18px
+                padding: 18px;
             }
 
             .chart-box {
-                height: 270px
+                height: 270px;
             }
         }
 
-        @media(prefers-reduced-motion:reduce) {
+        @media (prefers-reduced-motion: reduce) {
 
             .dot,
             .holo-core,
@@ -712,68 +745,111 @@
 
 <body>
 
+    <!-- SIDEBAR -->
+
     <aside class="sidebar">
+
         <div class="brand">
             <div class="brand-logo">🛡️</div>
             <h1>Fraud<span>Guard</span> AI</h1>
         </div>
-        <p class="tagline">Intelligent Fraud Detection</p>
+
+        <p class="tagline">
+            Intelligent Fraud Detection
+        </p>
 
         <nav>
             <a href="/" class="active" aria-current="page">
-                <span class="nav-icon">⌂</span>Dashboard
-            </a>
-            <a href="/analytics">
-                <span class="nav-icon">▥</span>Fraud Analytics
-            </a>
-            <a href="/cost-optimizer">
-                <span class="nav-icon">◎</span>Cost Optimizer
-            </a>
-            <a href="/pr-explorer">
-                <span class="nav-icon">◉</span>PR Explorer
-            </a>
-            <a href="/live-simulator">
-                <span class="nav-icon">▶</span>Live Simulator
-            </a>
-            <a href="/investigation-queue">
-                <span class="nav-icon">▤</span>Investigation Queue
-            </a>
-            <a href="/drift-monitor">
-                <span class="nav-icon">⌁</span>Drift Monitor
+                <span class="nav-icon">⌂</span>
+                Dashboard
             </a>
 
+            <a href="/analytics">
+                <span class="nav-icon">▥</span>
+                Fraud Analytics
+            </a>
+
+            <a href="/cost-optimizer">
+                <span class="nav-icon">◎</span>
+                Cost Optimizer
+            </a>
+
+            <a href="/pr-explorer">
+                <span class="nav-icon">◉</span>
+                PR Explorer
+            </a>
+
+            <a href="/live-simulator">
+                <span class="nav-icon">▶</span>
+                Live Simulator
+            </a>
+
+            <a href="/investigation-queue">
+                <span class="nav-icon">▤</span>
+                Investigation Queue
+            </a>
+
+            <a href="/drift-monitor">
+                <span class="nav-icon">⌁</span>
+                Drift Monitor
+            </a>
         </nav>
 
         <div class="dataset">
             <h3>📊 Dataset Information</h3>
             <p>Credit Card Transactions</p>
-            <p>{{ "{:,}".format(stats.total) }} transactions</p>
-            <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
-            <p>{{ stats.fraud_rate }}% fraud rate</p>
+            <p>
+                {{ "{:,}".format(stats.total) }} transactions
+            </p>
+            <p>
+                {{ "{:,}".format(stats.fraud) }} fraud cases
+            </p>
+            <p>
+                {{ stats.fraud_rate }}% fraud rate
+            </p>
         </div>
+
     </aside>
+
+    <!-- MAIN -->
 
     <main class="main">
 
         <div class="topbar">
-            <div class="top-label">✦ AI-Powered Fraud Detection & Analytics</div>
+            <div class="top-label">
+                ✦ AI-Powered Fraud Detection & Analytics
+            </div>
+
             <div class="top-right">
-                <span class="chip" id="dateDisplay">Dashboard</span>
-                <span class="chip">🛡 FraudGuard AI</span>
+                <span class="chip" id="dateDisplay">
+                    Dashboard
+                </span>
+                <span class="chip">
+                    🛡 FraudGuard AI
+                </span>
             </div>
         </div>
 
         <header class="header">
             <div>
                 <h1>Fraud Detection Dashboard</h1>
-                <p>Intelligent transaction insights and cost-sensitive fraud monitoring</p>
+                <p>
+                    Intelligent transaction insights and
+                    cost-sensitive fraud monitoring
+                </p>
             </div>
-            <span class="loaded">Dataset Loaded</span>
+
+            <span class="loaded">
+                Dataset Loaded
+            </span>
         </header>
 
-        <!-- HOLOGRAPHIC 3D COMMAND CENTER -->
+        <!-- 3D COMMAND CENTER -->
+
         <section class="command">
+
             <div class="command-copy">
+
                 <div class="eyebrow">
                     <span class="dot"></span>
                     AI FRAUD INTELLIGENCE CENTER
@@ -781,109 +857,196 @@
 
                 <h2>
                     Transaction Security<br>
-                    <span>Intelligence Overview</span>
+                    <span>
+                        Intelligence Overview
+                    </span>
                 </h2>
 
                 <p>
-                    Explore historical fraud patterns, transaction distribution
-                    and cost-sensitive detection insights using the loaded
-                    credit card dataset.
+                    Explore historical fraud patterns,
+                    transaction distribution and
+                    cost-sensitive detection insights
+                    using the loaded credit card dataset.
                 </p>
 
                 <div class="command-stats">
+
                     <div class="command-stat">
-                        <small>DATASET RECORDS</small>
-                        <strong>{{ "{:,}".format(stats.total) }}</strong>
+                        <small>
+                            DATASET RECORDS
+                        </small>
+                        <strong>
+                            {{ "{:,}".format(stats.total) }}
+                        </strong>
                     </div>
+
                     <div class="command-stat">
-                        <small>FRAUD LABELS</small>
-                        <strong class="danger">{{ "{:,}".format(stats.fraud) }}</strong>
+                        <small>
+                            FRAUD LABELS
+                        </small>
+                        <strong class="danger">
+                            {{ "{:,}".format(stats.fraud) }}
+                        </strong>
                     </div>
+
                     <div class="command-stat">
-                        <small>FRAUD RATE</small>
-                        <strong>{{ stats.fraud_rate }}%</strong>
+                        <small>
+                            FRAUD RATE
+                        </small>
+                        <strong>
+                            {{ stats.fraud_rate }}%
+                        </strong>
                     </div>
+
                 </div>
             </div>
 
-            <div class="command-art" aria-label="Decorative animated security visualization">
+            <div class="command-art" aria-label="Animated security visualization">
                 <div class="holo-orbit"></div>
                 <div class="holo-orbit two"></div>
-                <div class="holo-core" aria-hidden="true">✓</div>
+                <div class="holo-core" aria-hidden="true">
+                    ✓
+                </div>
                 <div class="holo-platform"></div>
-                <div class="art-caption">● ANALYTICS READY</div>
+                <div class="art-caption">
+                    ● ANALYTICS READY
+                </div>
             </div>
+
         </section>
 
-        <!-- DATASET KPI CARDS -->
+        <!-- KPI CARDS -->
+
         <section class="kpis">
+
             <article class="kpi" style="--accent:#287aff">
                 <div class="kpi-icon">▣</div>
                 <p>Total Transactions</p>
-                <h2>{{ "{:,}".format(stats.total) }}</h2>
-                <small>All recorded transactions</small>
+                <h2>
+                    {{ "{:,}".format(stats.total) }}
+                </h2>
+                <small>
+                    All recorded transactions
+                </small>
             </article>
 
             <article class="kpi" style="--accent:#ff456c">
                 <div class="kpi-icon">⚠</div>
                 <p>Fraud Transactions</p>
-                <h2>{{ "{:,}".format(stats.fraud) }}</h2>
-                <small>Confirmed fraud labels</small>
+                <h2>
+                    {{ "{:,}".format(stats.fraud) }}
+                </h2>
+                <small>
+                    Confirmed fraud labels
+                </small>
             </article>
 
             <article class="kpi" style="--accent:#00b995">
                 <div class="kpi-icon">✓</div>
                 <p>Legitimate Transactions</p>
-                <h2>{{ "{:,}".format(stats.total - stats.fraud) }}</h2>
-                <small>Transactions labeled legitimate</small>
+                <h2>
+                    {{ "{:,}".format(stats.total - stats.fraud) }}
+                </h2>
+                <small>
+                    Transactions labeled legitimate
+                </small>
             </article>
 
             <article class="kpi" style="--accent:#895bff">
                 <div class="kpi-icon">%</div>
                 <p>Fraud Rate</p>
-                <h2>{{ stats.fraud_rate }}%</h2>
-                <small>Share of fraudulent transactions</small>
+                <h2>
+                    {{ stats.fraud_rate }}%
+                </h2>
+                <small>
+                    Share of fraudulent transactions
+                </small>
             </article>
+
         </section>
 
-        <h2 class="section-title">Transaction Analytics</h2>
+        <!-- TRANSACTION ANALYTICS -->
+
+        <h2 class="section-title">
+            Transaction Analytics
+        </h2>
 
         <section class="charts">
+
             <article class="panel">
-                <h3>Transaction Class Distribution</h3>
-                <p>Legitimate versus fraudulent transactions in the dataset.</p>
+
+                <h3>
+                    Transaction Class Distribution
+                </h3>
+
+                <p>
+                    Legitimate versus fraudulent
+                    transactions in the dataset.
+                </p>
+
                 <div class="chart-box">
                     <canvas id="classChart"></canvas>
                 </div>
+
+                <div class="chart-note">
+                    Click Fraudulent or Legitimate in
+                    the legend to change the ring color.
+                </div>
+
             </article>
 
             <article class="panel">
-                <h3>Transaction Amount Distribution</h3>
-                <p>Transaction counts across amount ranges.</p>
+
+                <h3>
+                    Transaction Amount Distribution
+                </h3>
+
+                <p>
+                    Transaction counts across amount ranges.
+                </p>
+
                 <div class="chart-box">
                     <canvas id="amountChart"></canvas>
                 </div>
+
             </article>
 
             <article class="panel wide">
-                <h3>Transaction Activity Over Time</h3>
-                <p>Transaction counts across elapsed hours in the dataset.</p>
+
+                <h3>
+                    Transaction Activity Over Time
+                </h3>
+
+                <p>
+                    Transaction counts across elapsed
+                    hours in the dataset.
+                </p>
+
                 <div class="chart-box">
                     <canvas id="timeChart"></canvas>
                 </div>
+
             </article>
+
         </section>
 
+        <!-- KEY FINDINGS -->
+
         <section class="panel findings">
+
             <h3>✦ Key Findings</h3>
 
             <div class="finding">
                 <span class="number">1</span>
                 <div>
-                    <strong>Highly Imbalanced Dataset</strong>
+                    <strong>
+                        Highly Imbalanced Dataset
+                    </strong>
                     <p>
-                        Only {{ stats.fraud_rate }}% of transactions are labeled fraudulent.
-                        Accuracy alone can be misleading for rare-event detection.
+                        Only {{ stats.fraud_rate }}% of
+                        transactions are labeled fraudulent.
+                        Accuracy alone can be misleading
+                        for rare-event detection.
                     </p>
                 </div>
             </div>
@@ -891,10 +1054,14 @@
             <div class="finding">
                 <span class="number">2</span>
                 <div>
-                    <strong>Cost-Sensitive Fraud Detection</strong>
+                    <strong>
+                        Cost-Sensitive Fraud Detection
+                    </strong>
                     <p>
-                        False positives and false negatives have different financial
-                        consequences. The Cost Optimizer explores these assumptions.
+                        False positives and false negatives
+                        have different financial consequences.
+                        The Cost Optimizer explores these
+                        assumptions.
                     </p>
                 </div>
             </div>
@@ -902,10 +1069,13 @@
             <div class="finding">
                 <span class="number">3</span>
                 <div>
-                    <strong>Precision–Recall Evaluation</strong>
+                    <strong>
+                        Precision–Recall Evaluation
+                    </strong>
                     <p>
-                        Precision and recall are useful evaluation metrics
-                        for highly imbalanced classification problems.
+                        Precision and recall are useful
+                        evaluation metrics for highly
+                        imbalanced classification problems.
                     </p>
                 </div>
             </div>
@@ -913,44 +1083,80 @@
             <div class="finding">
                 <span class="number">4</span>
                 <div>
-                    <strong>Monitoring and Investigation</strong>
+                    <strong>
+                        Monitoring and Investigation
+                    </strong>
                     <p>
-                        Live Simulator, Investigation Queue and Drift Monitor
-                        help explore historical transactions and distribution changes.
+                        Live Simulator, Investigation Queue
+                        and Drift Monitor help explore
+                        historical transactions and
+                        distribution changes.
                     </p>
                 </div>
             </div>
+
         </section>
 
         <footer>
-            FraudGuard AI · Cost-Sensitive Fraud Detection & Drift Monitoring
+            FraudGuard AI · Cost-Sensitive Fraud Detection
+            & Drift Monitoring
         </footer>
+
     </main>
 
-
     <!-- FLASK CHART DATA -->
+
     <script id="fraud-chart-data" type="application/json">
 {{ chart_data | default({}, true) | tojson }}
 </script>
 
-    <script>
-        window.FRAUD_CHART_DATA = JSON.parse(
-            document.getElementById("fraud-chart-data").textContent
-        );
-    </script>
+    <!-- CHART.JS -->
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const dateDisplay = document.getElementById("dateDisplay");
-            dateDisplay.textContent = new Date().toLocaleDateString("en-US", {
-                year: "numeric", month: "short", day: "numeric"
-            });
 
-            const data = window.FRAUD_CHART_DATA;
-            if (!data || typeof Chart === "undefined") {
-                console.error("Chart data or Chart.js unavailable");
+            // DATE
+
+            const dateDisplay =
+                document.getElementById("dateDisplay");
+
+            if (dateDisplay) {
+                dateDisplay.textContent =
+                    new Date().toLocaleDateString(
+                        "en-US",
+                        {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric"
+                        }
+                    );
+            }
+
+            // FLASK DATA
+
+            let data = {};
+
+            try {
+                data = JSON.parse(
+                    document.getElementById(
+                        "fraud-chart-data"
+                    ).textContent
+                ) || {};
+            } catch (error) {
+                console.error(
+                    "Unable to parse Flask chart data:",
+                    error
+                );
+            }
+
+            if (typeof Chart === "undefined") {
+                console.error(
+                    "Chart.js is unavailable."
+                );
                 return;
             }
+
+            // COLORS
 
             const blue = "#287aff";
             const red = "#ff456c";
@@ -959,157 +1165,469 @@
             const gridColor = "rgba(83,124,191,.13)";
 
             Chart.defaults.color = muted;
-            Chart.defaults.font.family = "'Segoe UI',Arial,sans-serif";
+            Chart.defaults.font.family =
+                "'Segoe UI', Arial, sans-serif";
+
+            // COMMON OPTIONS
 
             const common = {
                 responsive: true,
                 maintainAspectRatio: false,
+
                 plugins: {
                     legend: {
                         position: "bottom",
-                        labels: { usePointStyle: true, padding: 18 }
+
+                        labels: {
+                            usePointStyle: true,
+                            padding: 18
+                        }
                     },
+
                     tooltip: {
                         backgroundColor: navy,
-                        titleColor: "#fff",
-                        bodyColor: "#fff",
+                        titleColor: "#ffffff",
+                        bodyColor: "#ffffff",
                         padding: 12,
                         cornerRadius: 10
                     }
                 }
             };
 
+            // FRAUD LABEL DETECTION
+
+            function isFraud(label) {
+                const name =
+                    String(label).toLowerCase();
+
+                if (
+                    name.includes("legitimate") ||
+                    name.includes("genuine") ||
+                    name.includes("normal") ||
+                    name.includes("non-fraud") ||
+                    name.includes("non fraud")
+                ) {
+                    return false;
+                }
+
+                return name.includes("fraud");
+            }
+
+            // SELECTED TRANSACTION TYPE
+
+            let selectedTransactionType =
+                "legitimate";
+
+            // CENTER TEXT PLUGIN
+
             const centerText = {
-                id: "centerText",
+                id: "fraudCenterText",
+
                 afterDraw(chart) {
-                    if (chart.config.type !== "doughnut") return;
-                    const arc = chart.getDatasetMeta(0).data[0];
+                    if (
+                        chart.config.type !== "doughnut"
+                    ) {
+                        return;
+                    }
+
+                    const labels =
+                        chart.data.labels || [];
+
+                    const values =
+                        chart.data.datasets[0].data || [];
+
+                    const index =
+                        labels.findIndex(label => {
+                            if (
+                                selectedTransactionType ===
+                                "fraud"
+                            ) {
+                                return isFraud(label);
+                            }
+
+                            return !isFraud(label);
+                        });
+
+                    if (index < 0) return;
+
+                    const count =
+                        Number(values[index] || 0);
+
+                    const color =
+                        selectedTransactionType === "fraud"
+                            ? red
+                            : blue;
+
+                    const title =
+                        selectedTransactionType === "fraud"
+                            ? "Fraud Transactions"
+                            : "Legitimate Transactions";
+
+                    const arc =
+                        chart.getDatasetMeta(0).data[0];
+
                     if (!arc) return;
 
-                    const total = chart.data.datasets[0].data.reduce(
-                        (sum, v) => sum + Number(v || 0), 0
-                    );
-
                     const ctx = chart.ctx;
+
                     ctx.save();
+
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
-                    ctx.fillStyle = navy;
-                    ctx.font = "bold 23px Segoe UI,Arial";
-                    ctx.fillText(total.toLocaleString(), arc.x, arc.y - 10);
-                    ctx.fillStyle = muted;
-                    ctx.font = "12px Segoe UI,Arial";
-                    ctx.fillText("Total Transactions", arc.x, arc.y + 17);
+
+                    ctx.fillStyle = color;
+                    ctx.font =
+                        "bold 27px Segoe UI, Arial";
+
+                    ctx.fillText(
+                        count.toLocaleString(),
+                        arc.x,
+                        arc.y - 13
+                    );
+
+                    ctx.font =
+                        "12px Segoe UI, Arial";
+
+                    ctx.fillText(
+                        title,
+                        arc.x,
+                        arc.y + 19
+                    );
+
                     ctx.restore();
                 }
             };
 
+            // TRANSACTION CLASS DISTRIBUTION
+
             if (data.class_chart) {
-                const labels = data.class_chart.labels || [];
-                new Chart(document.getElementById("classChart"), {
-                    type: "doughnut",
-                    data: {
-                        labels,
-                        datasets: [{
-                            data: data.class_chart.values || [],
-                            backgroundColor: labels.map(label => {
-                                const name = String(label).toLowerCase();
-                                return /fraud/.test(name) && !/non[\s-]?fraud/.test(name)
-                                    ? red : blue;
-                            }),
-                            borderColor: "#fff",
-                            borderWidth: 3,
-                            hoverOffset: 8
-                        }]
-                    },
-                    plugins: [centerText],
-                    options: { ...common, cutout: "72%" }
-                });
+
+                const labels =
+                    data.class_chart.labels || [];
+
+                const values =
+                    data.class_chart.values || [];
+
+                const canvas =
+                    document.getElementById(
+                        "classChart"
+                    );
+
+                if (canvas && labels.length) {
+
+                    // Permanent category colors.
+                    // These colors are also used for
+                    // legend dots regardless of selection.
+
+                    const originalColors =
+                        labels.map(label =>
+                            isFraud(label)
+                                ? red
+                                : blue
+                        );
+
+                    // Update ring without changing
+                    // the actual transaction counts.
+
+                    function applySelectedColor(chart) {
+                        const selectedColor =
+                            selectedTransactionType === "fraud"
+                                ? red
+                                : blue;
+
+                        chart.data.datasets[0]
+                            .backgroundColor =
+                            labels.map(() => selectedColor);
+
+                        chart.data.datasets[0]
+                            .borderColor = "#ffffff";
+
+                        chart.data.datasets[0]
+                            .borderWidth = 3;
+
+                        chart.update("none");
+                    }
+
+                    // Legend labels with fixed colors.
+                    // Do not derive dot colors from
+                    // dataset.backgroundColor because
+                    // the ring color changes dynamically.
+
+                    function fixedLegendLabels(chart) {
+                        return labels.map((label, index) => ({
+                            text: label,
+                            fillStyle: originalColors[index],
+                            strokeStyle: originalColors[index],
+                            fontColor: muted,
+                            lineWidth: 0,
+                            hidden: false,
+                            index: index,
+                            pointStyle: "circle"
+                        }));
+                    }
+
+                    const doughnut = new Chart(
+                        canvas,
+                        {
+                            type: "doughnut",
+
+                            data: {
+                                labels: labels,
+
+                                datasets: [{
+                                    data: values,
+                                    backgroundColor:
+                                        [...originalColors],
+                                    borderColor: "#ffffff",
+                                    borderWidth: 3,
+                                    hoverOffset: 10
+                                }]
+                            },
+
+                            plugins: [centerText],
+
+                            options: {
+                                ...common,
+
+                                cutout: "72%",
+
+                                onHover(
+                                    event,
+                                    elements,
+                                    chart
+                                ) {
+                                    if (!elements.length) {
+                                        return;
+                                    }
+
+                                    const index =
+                                        elements[0].index;
+
+                                    const nextType =
+                                        isFraud(labels[index])
+                                            ? "fraud"
+                                            : "legitimate";
+
+                                    if (
+                                        nextType !==
+                                        selectedTransactionType
+                                    ) {
+                                        selectedTransactionType =
+                                            nextType;
+
+                                        applySelectedColor(chart);
+                                    }
+                                },
+
+                                plugins: {
+                                    ...common.plugins,
+
+                                    legend: {
+                                        ...common.plugins.legend,
+
+                                        labels: {
+                                            usePointStyle: true,
+                                            padding: 18,
+                                            generateLabels:
+                                                fixedLegendLabels
+                                        },
+
+                                        onClick(
+                                            event,
+                                            item,
+                                            legend
+                                        ) {
+                                            selectedTransactionType =
+                                                isFraud(item.text)
+                                                    ? "fraud"
+                                                    : "legitimate";
+
+                                            applySelectedColor(
+                                                legend.chart
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+
+                    // Default selection:
+                    // blue legitimate ring.
+
+                    applySelectedColor(doughnut);
+                }
             }
+
+            // TRANSACTION AMOUNT DISTRIBUTION
 
             if (data.amount_chart) {
-                new Chart(document.getElementById("amountChart"), {
-                    type: "bar",
-                    data: {
-                        labels: data.amount_chart.labels || [],
-                        datasets: [
-                            {
-                                label: "Legitimate",
-                                data: data.amount_chart.legitimate || [],
-                                backgroundColor: blue,
-                                borderRadius: 6,
-                                maxBarThickness: 28
-                            },
-                            {
-                                label: "Fraud",
-                                data: data.amount_chart.fraud || [],
-                                backgroundColor: red,
-                                borderRadius: 6,
-                                maxBarThickness: 28
-                            }
-                        ]
-                    },
-                    options: {
-                        ...common,
-                        scales: {
-                            x: { grid: { display: false } },
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: gridColor },
-                                ticks: { precision: 0 }
+
+                const canvas =
+                    document.getElementById(
+                        "amountChart"
+                    );
+
+                if (canvas) {
+
+                    new Chart(canvas, {
+                        type: "bar",
+
+                        data: {
+                            labels:
+                                data.amount_chart.labels || [],
+
+                            datasets: [
+                                {
+                                    label: "Legitimate",
+
+                                    data:
+                                        data.amount_chart
+                                            .legitimate || [],
+
+                                    backgroundColor: blue,
+                                    borderRadius: 6,
+                                    maxBarThickness: 28
+                                },
+
+                                {
+                                    label: "Fraud",
+
+                                    data:
+                                        data.amount_chart
+                                            .fraud || [],
+
+                                    backgroundColor: red,
+                                    borderRadius: 6,
+                                    maxBarThickness: 28
+                                }
+                            ]
+                        },
+
+                        options: {
+                            ...common,
+
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+
+                                y: {
+                                    beginAtZero: true,
+
+                                    grid: {
+                                        color: gridColor
+                                    },
+
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
 
+            // TRANSACTION ACTIVITY OVER TIME
+
             if (data.time_chart) {
-                new Chart(document.getElementById("timeChart"), {
-                    type: "line",
-                    data: {
-                        labels: data.time_chart.labels || [],
-                        datasets: [
-                            {
-                                label: "Legitimate",
-                                data: data.time_chart.legitimate || [],
-                                borderColor: blue,
-                                backgroundColor: "rgba(40,122,255,.12)",
-                                fill: true,
-                                tension: .35,
-                                pointRadius: 2,
-                                borderWidth: 2.5
-                            },
-                            {
-                                label: "Fraud",
-                                data: data.time_chart.fraud || [],
-                                borderColor: red,
-                                backgroundColor: "rgba(255,69,108,.1)",
-                                fill: false,
-                                tension: .35,
-                                pointRadius: 3,
-                                borderWidth: 2
-                            }
-                        ]
-                    },
-                    options: {
-                        ...common,
-                        scales: {
-                            x: {
-                                title: { display: true, text: "Elapsed Hour" },
-                                grid: { display: false }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                title: { display: true, text: "Transaction Count" },
-                                grid: { color: gridColor },
-                                ticks: { precision: 0 }
+
+                const canvas =
+                    document.getElementById(
+                        "timeChart"
+                    );
+
+                if (canvas) {
+
+                    new Chart(canvas, {
+                        type: "line",
+
+                        data: {
+                            labels:
+                                data.time_chart.labels || [],
+
+                            datasets: [
+                                {
+                                    label: "Legitimate",
+
+                                    data:
+                                        data.time_chart
+                                            .legitimate || [],
+
+                                    borderColor: blue,
+
+                                    backgroundColor:
+                                        "rgba(40,122,255,.12)",
+
+                                    fill: true,
+                                    tension: .35,
+                                    pointRadius: 2,
+                                    borderWidth: 2.5
+                                },
+
+                                {
+                                    label: "Fraud",
+
+                                    data:
+                                        data.time_chart
+                                            .fraud || [],
+
+                                    borderColor: red,
+
+                                    backgroundColor:
+                                        "rgba(255,69,108,.1)",
+
+                                    fill: false,
+                                    tension: .35,
+                                    pointRadius: 3,
+                                    borderWidth: 2
+                                }
+                            ]
+                        },
+
+                        options: {
+                            ...common,
+
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Elapsed Hour"
+                                    },
+
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+
+                                y: {
+                                    beginAtZero: true,
+
+                                    title: {
+                                        display: true,
+                                        text: "Transaction Count"
+                                    },
+
+                                    grid: {
+                                        color: gridColor
+                                    },
+
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
+
         });
     </script>
+
 </body>
 
 </html>
