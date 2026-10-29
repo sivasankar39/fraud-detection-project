@@ -6,6 +6,9 @@ import os
 import pandas as pd
 import numpy as np
 
+import joblib
+from functools import lru_cache
+
 
 # ==================================================
 # FLASK APPLICATION
@@ -15,9 +18,17 @@ app = Flask(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DATASET_PATH = os.path.join(BASE_DIR, "creditcard.csv")
 MODEL_PATH = os.path.join(BASE_DIR, "fraud_model.pkl")
 PR_RESULTS_PATH = os.path.join(BASE_DIR, "pr_results.csv")
+
+# AI/ML project files are in the parent project folder
+PROJECT_ROOT = Path(BASE_DIR).parent
+
+DATASET_PATH = os.path.join(PROJECT_ROOT, "data", "creditcard_intermediate.csv")
+VALIDATION_PATH = PROJECT_ROOT / "data" / "validation.csv"
+MODEL_BUNDLE_PATH = (
+    PROJECT_ROOT / "models" / "fraud_xgboost_pipeline.joblib"
+)
 
 
 # ==================================================
@@ -339,14 +350,142 @@ def analytics():
 # COST OPTIMIZER PAGE
 # ==================================================
 
+@lru_cache(maxsize=1)
+def load_cost_optimizer_data():
+    """Load the saved model and validation predictions once."""
+
+    if not MODEL_BUNDLE_PATH.exists():
+        raise FileNotFoundError(
+            f"Trained model bundle not found: {MODEL_BUNDLE_PATH}"
+        )
+
+    if not VALIDATION_PATH.exists():
+        raise FileNotFoundError(
+            f"Validation dataset not found: {VALIDATION_PATH}"
+        )
+
+    bundle = joblib.load(MODEL_BUNDLE_PATH)
+    validation_df = pd.read_csv(VALIDATION_PATH)
+
+    feature_columns = bundle["feature_columns"]
+
+    required_columns = set(feature_columns) | {"Class", "Amount"}
+    missing_columns = required_columns - set(validation_df.columns)
+
+    if missing_columns:
+        raise ValueError(
+            f"Validation dataset is missing columns: "
+            f"{sorted(missing_columns)}"
+        )
+
+    X_val = validation_df[feature_columns]
+    y_true = validation_df["Class"].to_numpy(dtype=int)
+    amounts = validation_df["Amount"].to_numpy(dtype=float)
+
+    probabilities = bundle["model"].predict_proba(X_val)[:, 1]
+
+    return {
+        "bundle": bundle,
+        "y_true": y_true,
+        "amounts": amounts,
+        "probabilities": probabilities,
+    }
+
+
+def calculate_optimizer_metrics(fp_unit_cost, threshold, fn_multiplier=1.0):
+    """Calculate validation-set costs for the selected assumptions."""
+
+    data = load_cost_optimizer_data()
+
+    y_true = data["y_true"]
+    amounts = data["amounts"]
+    probabilities = data["probabilities"]
+
+    predictions = (probabilities >= threshold).astype(int)
+
+    fp_mask = (y_true == 0) & (predictions == 1)
+    fn_mask = (y_true == 1) & (predictions == 0)
+
+    fp_count = int(fp_mask.sum())
+    fn_count = int(fn_mask.sum())
+
+    fp_cost = fp_count * fp_unit_cost
+
+    # Baseline missed-fraud loss is the sum of the missed fraud Amounts.
+    # The multiplier allows scenario analysis; 1.0 means the original
+    # notebook assumption is used without adjustment.
+    fn_loss = float(amounts[fn_mask].sum()) * fn_multiplier
+
+    total_cost = fp_cost + fn_loss
+
+    actual_fraud = int((y_true == 1).sum())
+    detected_fraud = int(((y_true == 1) & (predictions == 1)).sum())
+
+    precision = (
+        float(((y_true == 1) & (predictions == 1)).sum())
+        / max(int(predictions.sum()), 1)
+    )
+
+    recall = detected_fraud / max(actual_fraud, 1)
+
+    return {
+        "validation_transactions": int(len(y_true)),
+        "actual_fraud": actual_fraud,
+        "fp_count": fp_count,
+        "fn_count": fn_count,
+        "fp_unit_cost": float(fp_unit_cost),
+        "fp_cost": float(fp_cost),
+        "fn_loss": float(fn_loss),
+        "total_cost": float(total_cost),
+        "precision": precision,
+        "recall": recall,
+        "threshold": float(threshold),
+        "fn_multiplier": float(fn_multiplier),
+    }
+
 @app.route("/cost-optimizer")
 def cost_optimizer():
     df = load_data()
+    model_data = load_cost_optimizer_data()
 
     return render_template(
         "cost_optimizer.html",
-        stats=get_stats(df)
+        stats=get_stats(df),
+        default_threshold=float(
+            model_data["bundle"].get("threshold", 0.78)
+        ),
     )
+
+
+@app.route("/api/cost-optimizer", methods=["POST"])
+def cost_optimizer_api():
+    try:
+        payload = request.get_json(silent=True) or {}
+
+        fp_cost = float(payload.get("fp_cost", 2))
+        threshold = float(payload.get("threshold", 0.78))
+        fn_multiplier = float(payload.get("fn_multiplier", 1.0))
+
+        if not 0 <= fp_cost <= 50:
+            return jsonify({"error": "FP cost must be between $0 and $50."}), 400
+
+        if not 0 <= threshold <= 1:
+            return jsonify({"error": "Threshold must be between 0 and 1."}), 400
+
+        if not 0 <= fn_multiplier <= 2:
+            return jsonify({"error": "Loss multiplier must be between 0 and 2."}), 400
+
+        return jsonify(
+            calculate_optimizer_metrics(
+                fp_unit_cost=fp_cost,
+                threshold=threshold,
+                fn_multiplier=fn_multiplier,
+            )
+        )
+
+    except Exception as exc:
+        app.logger.exception("Cost optimizer calculation failed")
+        return jsonify({"error": str(exc)}), 500
 
 
 # ==================================================
@@ -361,98 +500,56 @@ def pr_explorer():
         "precision": [],
         "recall": [],
         "average_precision": None,
-        "status": "Model results not found.",
-        "model_available": os.path.exists(MODEL_PATH)
+        "status": "Model results not available.",
+        "model_available": MODEL_BUNDLE_PATH.exists()
     }
 
-    if os.path.exists(PR_RESULTS_PATH):
-        try:
-            results = pd.read_csv(PR_RESULTS_PATH)
+    try:
+        from sklearn.metrics import (
+            precision_recall_curve,
+            average_precision_score,
+        )
 
-            required_columns = {"precision", "recall"}
+        analysis = load_cost_optimizer_data()
 
-            if required_columns.issubset(results.columns):
-                results["precision"] = pd.to_numeric(
-                    results["precision"],
-                    errors="coerce"
-                )
+        y_true = analysis["y_true"]
+        probabilities = analysis["probabilities"]
 
-                results["recall"] = pd.to_numeric(
-                    results["recall"],
-                    errors="coerce"
-                )
+        precision, recall, _ = precision_recall_curve(
+            y_true,
+            probabilities
+        )
 
-                results = results.dropna(
-                    subset=["precision", "recall"]
-                )
+        average_precision = average_precision_score(
+            y_true,
+            probabilities
+        )
 
-                results = results[
-                    results["precision"].between(0, 1)
-                    & results["recall"].between(0, 1)
-                ].copy()
+        pr_data["precision"] = precision.tolist()
+        pr_data["recall"] = recall.tolist()
+        pr_data["average_precision"] = round(
+            float(average_precision), 6
+        )
+        pr_data["status"] = (
+            "Precision-Recall curve generated using the saved "
+            "model and validation dataset."
+        )
 
-                if not results.empty:
-                    pr_data["precision"] = (
-                        results["precision"].tolist()
-                    )
-
-                    pr_data["recall"] = (
-                        results["recall"].tolist()
-                    )
-
-                    recall = results["recall"].to_numpy()
-                    precision = results["precision"].to_numpy()
-
-                    complete_curve = (
-                        len(recall) >= 2
-                        and abs(recall[0] - 1.0) < 1e-8
-                        and abs(recall[-1]) < 1e-8
-                        and (
-                            recall[:-1] >= recall[1:]
-                        ).all()
-                    )
-
-                    if complete_curve:
-                        ap = -np.sum(
-                            np.diff(recall) * precision[:-1]
-                        )
-
-                        pr_data["average_precision"] = (
-                            round(float(ap), 6)
-                        )
-
-                        pr_data["status"] = (
-                            "Precision-Recall results loaded. "
-                            "Average Precision calculated."
-                        )
-                    else:
-                        pr_data["status"] = (
-                            "PR curve loaded. Average Precision "
-                            "requires a complete ordered curve."
-                        )
-                else:
-                    pr_data["status"] = (
-                        "No valid Precision-Recall values found."
-                    )
-            else:
-                pr_data["status"] = (
-                    "CSV must contain precision and recall columns."
-                )
-
-        except (OSError, pd.errors.ParserError, ValueError):
-            app.logger.exception(
-                "Could not read PR results"
-            )
-
-            pr_data["status"] = (
-                "Could not read PR results CSV."
-            )
+    except (FileNotFoundError, ValueError, KeyError, OSError):
+        app.logger.exception(
+            "Could not generate Precision-Recall results"
+        )
+        pr_data["status"] = (
+            "Could not generate results. Check the model bundle "
+            "and validation dataset."
+        )
 
     return render_template(
         "pr_explorer.html",
         stats=get_stats(df),
         pr_data=pr_data
     )
+
 
 
 # ==================================================
@@ -473,47 +570,38 @@ def live_simulator():
 # LIVE SIMULATOR TRANSACTION API
 # ==================================================
 
+
 @app.route("/api/simulator/transactions")
 def simulator_transactions():
     try:
-        offset = int(
-            request.args.get("offset", 0)
-        )
-        limit = int(
-            request.args.get("limit", 10)
-        )
-
-        offset = max(0, offset)
-        limit = max(1, min(limit, 100))
-
+        offset = max(0, int(request.args.get("offset", 0)))
+        limit = max(1, min(int(request.args.get("limit", 10)), 100))
     except (ValueError, TypeError):
-        return jsonify({
-            "error": "Invalid offset or limit."
-        }), 400
+        return jsonify({"error": "Invalid offset or limit."}), 400
 
     try:
         df = load_data().copy()
 
-        required_columns = {
-            "Time",
-            "Amount",
-            "Class"
-        }
+        if not MODEL_BUNDLE_PATH.exists():
+            return jsonify({"error": "Trained model bundle not found."}), 500
 
-        if not required_columns.issubset(df.columns):
+        # Load the trained model and its expected feature columns
+        bundle = joblib.load(MODEL_BUNDLE_PATH)
+        model = bundle["model"]
+        feature_columns = bundle["feature_columns"]
+
+        required_columns = {"Time", "Amount", "Class"} | set(feature_columns)
+        missing_columns = required_columns - set(df.columns)
+
+        if missing_columns:
             return jsonify({
-                "error": (
-                    "Dataset must contain "
-                    "Time, Amount and Class."
-                )
-            }), 400
+                "error": "Dataset is missing required model features.",
+                "missing_columns": sorted(missing_columns)
+            }), 500
 
         df["transaction_id"] = df.index + 1
 
-        df = df.dropna(
-            subset=["Time", "Amount", "Class"]
-        )
-
+        df = df.dropna(subset=list(required_columns))
         df = df.sort_values(
             by=["Time", "transaction_id"],
             ascending=[True, True],
@@ -521,26 +609,39 @@ def simulator_transactions():
         )
 
         total = len(df)
+        batch = df.iloc[offset:offset + limit].copy()
 
-        batch = df.iloc[
-            offset:offset + limit
-        ]
+        # Generate model predictions for this batch
+        if not batch.empty:
+            X_batch = batch[feature_columns]
+            probabilities = model.predict_proba(X_batch)[:, 1]
+            predicted_classes = (probabilities >= 0.5).astype(int)
+        else:
+            probabilities = []
+            predicted_classes = []
 
         transactions = []
 
-        for row in batch.itertuples():
-            actual_class = int(row.Class)
+        for i, (_, row) in enumerate(batch.iterrows()):
+            actual_class = int(row["Class"])
+            predicted_class = int(predicted_classes[i])
+            probability = float(probabilities[i])
 
             transactions.append({
-                "id": int(row.transaction_id),
-                "time": float(row.Time),
-                "amount": round(float(row.Amount), 2),
+                "id": int(row["transaction_id"]),
+                "time": float(row["Time"]),
+                "amount": round(float(row["Amount"]), 2),
+
                 "actual_class": actual_class,
                 "actual_label": (
-                    "Fraud"
-                    if actual_class == 1
-                    else "Legitimate"
-                )
+                    "Fraud" if actual_class == 1 else "Legitimate"
+                ),
+
+                "predicted_class": predicted_class,
+                "predicted_label": (
+                    "Fraud" if predicted_class == 1 else "Legitimate"
+                ),
+                "fraud_probability": round(probability, 6)
             })
 
         next_offset = offset + len(transactions)
@@ -550,19 +651,15 @@ def simulator_transactions():
             "total": total,
             "next_offset": next_offset,
             "has_more": next_offset < total,
-            "mode": "historical_label_replay"
+            "mode": "historical_replay_with_model_predictions"
         })
 
     except Exception:
-        app.logger.exception(
-            "Simulator API failed"
-        )
-
+        app.logger.exception("Simulator API failed")
         return jsonify({
-            "error": (
-                "Could not load simulator transactions."
-            )
+            "error": "Could not generate simulator predictions. Check the model bundle and server logs."
         }), 500
+
 
 # ==================================================
 # INVESTIGATION QUEUE
