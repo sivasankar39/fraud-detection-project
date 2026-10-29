@@ -1,1219 +1,1301 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#071632">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#071632" />
     <title>Live Simulator | FraudGuard AI</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --blue: #317cff;
-            --cyan: #48d8ff;
-            --red: #ff456c;
-            --green: #00bc98;
-            --purple: #895bff;
-            --muted: #6980a9
+      :root {
+        --blue: #317cff;
+        --cyan: #48d8ff;
+        --red: #ff456c;
+        --green: #00bc98;
+        --purple: #895bff;
+        --muted: #6980a9;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font:
+          14px/1.6 "Segoe UI",
+          Arial,
+          sans-serif;
+        color: #10234c;
+        min-height: 100vh;
+        background:
+          radial-gradient(ellipse at 85% 0, #b6d1ff, transparent 42%),
+          linear-gradient(130deg, #edf5ff, #cddfff);
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      button,
+      select {
+        font: inherit;
+      }
+
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 260px;
+        z-index: 20;
+        padding: 24px 18px;
+        overflow-y: auto;
+        color: #fff;
+        background: linear-gradient(165deg, #102b61, #06112b 65%, #0c2457);
+        border-right: 1px solid #3263a0;
+        box-shadow: 12px 0 40px #0b28512a;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-icon {
+        display: grid;
+        place-items: center;
+        width: 51px;
+        height: 51px;
+        border-radius: 16px;
+        font-size: 27px;
+        flex-shrink: 0;
+        background: linear-gradient(140deg, #148eff, #7756ff);
+        border: 1px solid #86c8ff;
+        box-shadow: 0 0 25px #288fff80;
+      }
+
+      .brand h1 {
+        font-size: 21px;
+        letter-spacing: -0.8px;
+        margin: 0;
+      }
+
+      .brand h1 span {
+        color: #6dc9ff;
+      }
+
+      .subtitle {
+        color: #a7bee8;
+        font-size: 11px;
+        margin: 8px 0 31px 63px;
+      }
+
+      .sidebar nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .sidebar nav a {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px;
+        border-radius: 13px;
+        color: #b5c9ed;
+        transition: 0.25s;
+      }
+
+      .sidebar nav a:hover,
+      .sidebar nav a.active {
+        color: #fff;
+        background: linear-gradient(100deg, #087eff, #3655d4);
+        box-shadow: 0 8px 24px #126bff66;
+        transform: translateX(3px);
+      }
+
+      .nav-icon {
+        width: 23px;
+        text-align: center;
+        font-size: 19px;
+      }
+
+      .dataset-info {
+        margin-top: 30px;
+        padding: 17px;
+        border-radius: 17px;
+        background: #3d7acc22;
+        border: 1px solid #7eb5ff33;
+      }
+
+      .dataset-info h3 {
+        margin: 0 0 12px;
+      }
+
+      .dataset-info p {
+        margin: 8px 0;
+        color: #b7cbed;
+        font-size: 12px;
+      }
+
+      .main-content {
+        margin-left: 260px;
+        padding: 26px 32px 40px;
+        min-height: 100vh;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .top-label,
+      .chip {
+        padding: 12px 17px;
+        border: 1px solid #ffffffdd;
+        background: #ffffff7a;
+        border-radius: 15px;
+        color: #5574a7;
+        backdrop-filter: blur(15px);
+      }
+
+      .top-label {
+        flex: 1;
+        max-width: 540px;
+      }
+
+      .sim-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 24px;
+      }
+
+      .sim-header h1 {
+        margin: 0;
+        font-size: clamp(27px, 3vw, 38px);
+        letter-spacing: -1px;
+      }
+
+      .sim-muted {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.8;
+        margin: 7px 0;
+      }
+
+      .sim-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 18px;
+        border-radius: 15px;
+        background: #ffffffc9;
+        border: 1px solid #fff;
+        color: #1f5098;
+        font-weight: 750;
+        box-shadow: 0 10px 25px #2458a41a;
+        white-space: nowrap;
+      }
+
+      .sim-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #94a3b8;
+      }
+
+      .sim-dot.running {
+        background: #10d7a3;
+        box-shadow: 0 0 0 5px #10d7a32a;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        50% {
+          opacity: 0.4;
+          transform: scale(0.8);
+        }
+      }
+
+      /* HOLOGRAPHIC HERO */
+      .command {
+        position: relative;
+        isolation: isolate;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        min-height: 275px;
+        margin-bottom: 25px;
+        overflow: hidden;
+        border-radius: 27px;
+        color: white;
+        background: linear-gradient(120deg, #102f6c, #071631 65%, #0b2555);
+        border: 1px solid #6faaff88;
+        box-shadow:
+          0 22px 55px #103b8b44,
+          inset 0 1px #ffffff30;
+      }
+
+      .command:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.4;
+        pointer-events: none;
+        background:
+          linear-gradient(transparent 95%, #54aaff16 96%),
+          linear-gradient(90deg, transparent 95%, #54aaff13 96%);
+        background-size: 35px 35px;
+      }
+
+      .command-copy {
+        position: relative;
+        z-index: 2;
+        padding: 32px;
+      }
+
+      .eyebrow {
+        color: #6dcaff;
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 2px;
+      }
+
+      .command h2 {
+        font-size: clamp(28px, 3vw, 40px);
+        line-height: 1.2;
+        letter-spacing: -1px;
+        margin: 17px 0 12px;
+      }
+
+      .command h2 span {
+        color: #72d3ff;
+      }
+
+      .command-copy p {
+        color: #adc5e9;
+        max-width: 540px;
+        line-height: 1.8;
+      }
+
+      .command-tags {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 21px;
+      }
+
+      .command-tags span {
+        padding: 9px 13px;
+        border: 1px solid #91c1ff3a;
+        background: #ffffff10;
+        border-radius: 12px;
+        font-size: 11px;
+        color: #d2e8ff;
+      }
+
+      .command-art {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 260px;
+        perspective: 900px;
+      }
+
+      .holo-orbit {
+        position: absolute;
+        width: 215px;
+        height: 215px;
+        border: 2px solid #5bbfff88;
+        border-radius: 50%;
+        box-shadow: 0 0 25px #228dff55;
+        animation: orbit 10s linear infinite;
+      }
+
+      .holo-orbit.two {
+        width: 180px;
+        height: 180px;
+        border-style: dashed;
+        border-color: #a58bffbb;
+        animation-duration: 15s;
+        animation-direction: reverse;
+      }
+
+      .holo-core {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: 145px;
+        height: 155px;
+        font-size: 65px;
+        background: radial-gradient(circle at 35% 20%, #267ee9, #0b2c76 70%);
+        border: 2px solid #79d5ff;
+        clip-path: polygon(50% 0, 94% 17%, 89% 68%, 50% 100%, 11% 68%, 6% 17%);
+        filter: drop-shadow(0 0 18px #168aff);
+        animation: float 4s ease-in-out infinite;
+      }
+
+      .art-caption {
+        position: absolute;
+        bottom: 14px;
+        color: #75e9d1;
+        font-size: 11px;
+        letter-spacing: 1px;
+        font-weight: 700;
+      }
+
+      @keyframes orbit {
+        from {
+          transform: rotateX(65deg) rotateZ(0);
         }
 
-        * {
-            box-sizing: border-box
+        to {
+          transform: rotateX(65deg) rotateZ(360deg);
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
         }
 
-        body {
-            margin: 0;
-            font: 14px/1.6 "Segoe UI", Arial, sans-serif;
-            color: #10234c;
-            min-height: 100vh;
-            background: radial-gradient(ellipse at 85% 0, #b6d1ff, transparent 42%),
-                linear-gradient(130deg, #edf5ff, #cddfff)
+        50% {
+          transform: translateY(-14px);
         }
+      }
 
-        a {
-            text-decoration: none;
-            color: inherit
-        }
+      /* GLASS PANELS */
+      .sim-panel,
+      .sim-kpi {
+        background: linear-gradient(145deg, #ffffffed, #eaf3ffcc);
+        border: 1px solid white;
+        border-radius: 23px;
+        box-shadow:
+          0 17px 38px #2756a324,
+          inset 0 1px white;
+        backdrop-filter: blur(18px);
+      }
 
-        button,
-        select {
-            font: inherit
-        }
+      .sim-panel {
+        min-width: 0;
+        padding: 26px;
+        margin-bottom: 22px;
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+      }
 
-        .sidebar {
-            position: fixed;
-            inset: 0 auto 0 0;
-            width: 260px;
-            z-index: 20;
-            padding: 24px 18px;
-            overflow-y: auto;
-            color: #fff;
-            background: linear-gradient(165deg, #102b61, #06112b 65%, #0c2457);
-            border-right: 1px solid #3263a0;
-            box-shadow: 12px 0 40px #0b28512a
-        }
+      .sim-panel:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 25px 52px #2558ae36;
+      }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px
-        }
+      .sim-panel h3 {
+        font-size: 20px;
+        margin: 0 0 8px;
+        color: #0a204c;
+      }
 
-        .brand-icon {
-            display: grid;
-            place-items: center;
-            width: 51px;
-            height: 51px;
-            border-radius: 16px;
-            font-size: 27px;
-            flex-shrink: 0;
-            background: linear-gradient(140deg, #148eff, #7756ff);
-            border: 1px solid #86c8ff;
-            box-shadow: 0 0 25px #288fff80
-        }
+      .sim-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-top: 20px;
+      }
 
-        .brand h1 {
-            font-size: 21px;
-            letter-spacing: -.8px;
-            margin: 0
-        }
+      .sim-btn {
+        border: 0;
+        padding: 12px 22px;
+        border-radius: 12px;
+        font-weight: 750;
+        cursor: pointer;
+        transition: 0.2s;
+      }
 
-        .brand h1 span {
-            color: #6dc9ff
-        }
+      .sim-btn:hover:not(:disabled) {
+        transform: translateY(-3px);
+      }
 
-        .subtitle {
-            color: #a7bee8;
-            font-size: 11px;
-            margin: 8px 0 31px 63px
-        }
+      .sim-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
 
-        .sidebar nav {
-            display: grid;
-            gap: 8px
-        }
+      .sim-start {
+        color: white;
+        background: linear-gradient(110deg, #1676ff, #5659e8);
+        box-shadow: 0 8px 20px #246bf540;
+      }
 
-        .sidebar nav a {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 13px;
-            border-radius: 13px;
-            color: #b5c9ed;
-            transition: .25s
-        }
+      .sim-pause {
+        background: #fff0d6;
+        color: #a76b0a;
+      }
 
-        .sidebar nav a:hover,
-        .sidebar nav a.active {
-            color: #fff;
-            background: linear-gradient(100deg, #087eff, #3655d4);
-            box-shadow: 0 8px 24px #126bff66;
-            transform: translateX(3px)
-        }
+      .sim-reset {
+        background: #e1eaf8;
+        color: #345273;
+      }
 
-        .nav-icon {
-            width: 23px;
-            text-align: center;
-            font-size: 19px
-        }
+      .sim-speed {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #5c7190;
+        font-size: 13px;
+      }
 
-        .dataset-info {
-            margin-top: 30px;
-            padding: 17px;
-            border-radius: 17px;
-            background: #3d7acc22;
-            border: 1px solid #7eb5ff33
-        }
+      .sim-speed select {
+        padding: 11px;
+        border: 1px solid #dce6f3;
+        border-radius: 11px;
+        background: white;
+        color: #15345e;
+      }
 
-        .dataset-info h3 {
-            margin: 0 0 12px
-        }
+      .sim-note {
+        margin-top: 18px;
+        padding: 14px 17px;
+        border-radius: 13px;
+        border: 1px solid #d6e7ff;
+        background: #edf5ff;
+        color: #536b8a;
+        font-size: 12px;
+        line-height: 1.8;
+      }
 
-        .dataset-info p {
-            margin: 8px 0;
-            color: #b7cbed;
-            font-size: 12px
-        }
+      /* KPI */
+      .sim-kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+        margin-bottom: 23px;
+      }
 
-        .main-content {
-            margin-left: 260px;
-            padding: 26px 32px 40px;
-            min-height: 100vh
-        }
+      .sim-kpi {
+        --accent: var(--blue);
+        min-width: 0;
+        padding: 23px;
+        border-top: 4px solid var(--accent);
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+      }
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 25px
-        }
+      .sim-kpi.fraud {
+        --accent: var(--red);
+      }
 
-        .top-label,
-        .chip {
-            padding: 12px 17px;
-            border: 1px solid #ffffffdd;
-            background: #ffffff7a;
-            border-radius: 15px;
-            color: #5574a7;
-            backdrop-filter: blur(15px)
-        }
+      .sim-kpi.safe {
+        --accent: var(--green);
+      }
 
-        .top-label {
-            flex: 1;
-            max-width: 540px
-        }
+      .sim-kpi.rate {
+        --accent: var(--purple);
+      }
 
-        .sim-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 18px;
-            margin-bottom: 24px
-        }
+      .sim-kpi:hover {
+        transform: perspective(850px) translateY(-8px) rotateX(4deg);
+        box-shadow: 0 28px 55px #2458b53b;
+      }
 
-        .sim-header h1 {
-            margin: 0;
-            font-size: clamp(27px, 3vw, 38px);
-            letter-spacing: -1px
-        }
+      .sim-kpi-icon {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        margin-bottom: 13px;
+        border-radius: 13px;
+        background: #e4edff;
+        color: var(--accent);
+        font-size: 23px;
+      }
 
-        .sim-muted {
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.8;
-            margin: 7px 0
-        }
+      .sim-kpi p {
+        margin: 0 0 9px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
 
-        .sim-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 18px;
-            border-radius: 15px;
-            background: #ffffffc9;
-            border: 1px solid #fff;
-            color: #1f5098;
-            font-weight: 750;
-            box-shadow: 0 10px 25px #2458a41a;
-            white-space: nowrap
-        }
+      .sim-kpi h2 {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: clamp(23px, 2vw, 32px);
+        overflow-wrap: anywhere;
+      }
 
-        .sim-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #94a3b8
-        }
+      .sim-kpi small {
+        font-size: 11px;
+        color: var(--muted);
+      }
 
-        .sim-dot.running {
-            background: #10d7a3;
-            box-shadow: 0 0 0 5px #10d7a32a;
-            animation: pulse 2s infinite
-        }
+      .sim-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+        gap: 22px;
+        align-items: start;
+      }
 
-        @keyframes pulse {
-            50% {
-                opacity: .4;
-                transform: scale(.8)
-            }
-        }
+      .sim-chart {
+        height: 310px;
+        position: relative;
+        margin-top: 20px;
+      }
 
-        /* HOLOGRAPHIC HERO */
-        .command {
-            position: relative;
-            isolation: isolate;
-            display: grid;
-            grid-template-columns: 1.4fr 1fr;
-            min-height: 275px;
-            margin-bottom: 25px;
-            overflow: hidden;
-            border-radius: 27px;
-            color: white;
-            background: linear-gradient(120deg, #102f6c, #071631 65%, #0b2555);
-            border: 1px solid #6faaff88;
-            box-shadow: 0 22px 55px #103b8b44, inset 0 1px #ffffff30
-        }
+      .sim-chart canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
 
-        .command:before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: .4;
-            pointer-events: none;
-            background: linear-gradient(transparent 95%, #54aaff16 96%),
-                linear-gradient(90deg, transparent 95%, #54aaff13 96%);
-            background-size: 35px 35px
-        }
+      .sim-alerts {
+        max-height: 330px;
+        overflow-y: auto;
+        margin-top: 16px;
+      }
 
-        .command-copy {
-            position: relative;
-            z-index: 2;
-            padding: 32px
-        }
+      .sim-alert {
+        margin-bottom: 12px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid #ffd0dc;
+        background: linear-gradient(135deg, #fff6f8, #ffe8ef);
+      }
 
-        .eyebrow {
-            color: #6dcaff;
-            font-size: 11px;
-            font-weight: 750;
-            letter-spacing: 2px
-        }
+      .sim-alert strong {
+        color: #b42343;
+      }
 
-        .command h2 {
-            font-size: clamp(28px, 3vw, 40px);
-            line-height: 1.2;
-            letter-spacing: -1px;
-            margin: 17px 0 12px
-        }
+      .sim-alert p {
+        margin: 6px 0 0;
+        color: #6c7f99;
+        font-size: 12px;
+      }
 
-        .command h2 span {
-            color: #72d3ff
-        }
+      .sim-empty {
+        padding: 22px;
+        color: #8aa0ba;
+        text-align: center;
+      }
 
-        .command-copy p {
-            color: #adc5e9;
-            max-width: 540px;
-            line-height: 1.8
-        }
+      .sim-table-wrap {
+        overflow-x: auto;
+        margin-top: 18px;
+      }
 
-        .command-tags {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 21px
-        }
+      .sim-table {
+        width: 100%;
+        min-width: 650px;
+        border-collapse: collapse;
+      }
 
-        .command-tags span {
-            padding: 9px 13px;
-            border: 1px solid #91c1ff3a;
-            background: #ffffff10;
-            border-radius: 12px;
-            font-size: 11px;
-            color: #d2e8ff
-        }
+      .sim-table th {
+        padding: 15px;
+        text-align: left;
+        background: #e8f1ff;
+        color: #5574a7;
+        font-size: 12px;
+      }
 
-        .command-art {
-            position: relative;
-            display: grid;
-            place-items: center;
-            min-height: 260px;
-            perspective: 900px
-        }
+      .sim-table td {
+        padding: 15px;
+        border-bottom: 1px solid #dce8f7;
+        font-size: 13px;
+      }
 
-        .holo-orbit {
-            position: absolute;
-            width: 215px;
-            height: 215px;
-            border: 2px solid #5bbfff88;
-            border-radius: 50%;
-            box-shadow: 0 0 25px #228dff55;
-            animation: orbit 10s linear infinite
-        }
+      .sim-table tbody tr:hover {
+        background: #eaf3ff99;
+      }
 
-        .holo-orbit.two {
-            width: 180px;
-            height: 180px;
-            border-style: dashed;
-            border-color: #a58bffbb;
-            animation-duration: 15s;
-            animation-direction: reverse
-        }
+      .sim-label {
+        display: inline-block;
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-weight: 750;
+        font-size: 11px;
+      }
 
-        .holo-core {
-            position: relative;
-            z-index: 2;
-            display: grid;
-            place-items: center;
-            width: 145px;
-            height: 155px;
-            font-size: 65px;
-            background: radial-gradient(circle at 35% 20%, #267ee9, #0b2c76 70%);
-            border: 2px solid #79d5ff;
-            clip-path: polygon(50% 0, 94% 17%, 89% 68%, 50% 100%, 11% 68%, 6% 17%);
-            filter: drop-shadow(0 0 18px #168aff);
-            animation: float 4s ease-in-out infinite
-        }
+      .sim-label.fraud {
+        color: #be2348;
+        background: #ffe8ee;
+      }
 
-        .art-caption {
-            position: absolute;
-            bottom: 14px;
-            color: #75e9d1;
-            font-size: 11px;
-            letter-spacing: 1px;
-            font-weight: 700
-        }
+      .sim-label.safe {
+        color: #078467;
+        background: #dcfce7;
+      }
 
-        @keyframes orbit {
-            from {
-                transform: rotateX(65deg) rotateZ(0)
-            }
+      .page-footer {
+        text-align: center;
+        padding-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
 
-            to {
-                transform: rotateX(65deg) rotateZ(360deg)
-            }
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0)
-            }
-
-            50% {
-                transform: translateY(-14px)
-            }
-        }
-
-        /* GLASS PANELS */
-        .sim-panel,
-        .sim-kpi {
-            background: linear-gradient(145deg, #ffffffed, #eaf3ffcc);
-            border: 1px solid white;
-            border-radius: 23px;
-            box-shadow: 0 17px 38px #2756a324, inset 0 1px white;
-            backdrop-filter: blur(18px)
-        }
-
-        .sim-panel {
-            min-width: 0;
-            padding: 26px;
-            margin-bottom: 22px;
-            transition: transform .3s, box-shadow .3s
-        }
-
-        .sim-panel:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 25px 52px #2558ae36
-        }
-
-        .sim-panel h3 {
-            font-size: 20px;
-            margin: 0 0 8px;
-            color: #0a204c
-        }
-
-        .sim-controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-            margin-top: 20px
-        }
-
-        .sim-btn {
-            border: 0;
-            padding: 12px 22px;
-            border-radius: 12px;
-            font-weight: 750;
-            cursor: pointer;
-            transition: .2s
-        }
-
-        .sim-btn:hover:not(:disabled) {
-            transform: translateY(-3px)
-        }
-
-        .sim-btn:disabled {
-            opacity: .45;
-            cursor: not-allowed
-        }
-
-        .sim-start {
-            color: white;
-            background: linear-gradient(110deg, #1676ff, #5659e8);
-            box-shadow: 0 8px 20px #246bf540
-        }
-
-        .sim-pause {
-            background: #fff0d6;
-            color: #a76b0a
-        }
-
-        .sim-reset {
-            background: #e1eaf8;
-            color: #345273
-        }
-
-        .sim-speed {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #5c7190;
-            font-size: 13px
-        }
-
-        .sim-speed select {
-            padding: 11px;
-            border: 1px solid #dce6f3;
-            border-radius: 11px;
-            background: white;
-            color: #15345e
-        }
-
-        .sim-note {
-            margin-top: 18px;
-            padding: 14px 17px;
-            border-radius: 13px;
-            border: 1px solid #d6e7ff;
-            background: #edf5ff;
-            color: #536b8a;
-            font-size: 12px;
-            line-height: 1.8
-        }
-
-        /* KPI */
+      @media (max-width: 1250px) {
         .sim-kpis {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 18px;
-            margin-bottom: 23px
-        }
-
-        .sim-kpi {
-            --accent: var(--blue);
-            min-width: 0;
-            padding: 23px;
-            border-top: 4px solid var(--accent);
-            transition: transform .3s, box-shadow .3s
-        }
-
-        .sim-kpi.fraud {
-            --accent: var(--red)
-        }
-
-        .sim-kpi.safe {
-            --accent: var(--green)
-        }
-
-        .sim-kpi.rate {
-            --accent: var(--purple)
-        }
-
-        .sim-kpi:hover {
-            transform: perspective(850px) translateY(-8px) rotateX(4deg);
-            box-shadow: 0 28px 55px #2458b53b
-        }
-
-        .sim-kpi-icon {
-            display: grid;
-            place-items: center;
-            width: 44px;
-            height: 44px;
-            margin-bottom: 13px;
-            border-radius: 13px;
-            background: #e4edff;
-            color: var(--accent);
-            font-size: 23px
-        }
-
-        .sim-kpi p {
-            margin: 0 0 9px;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 650
-        }
-
-        .sim-kpi h2 {
-            margin: 0 0 8px;
-            color: var(--accent);
-            font-size: clamp(23px, 2vw, 32px);
-            overflow-wrap: anywhere
-        }
-
-        .sim-kpi small {
-            font-size: 11px;
-            color: var(--muted)
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .sim-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-            gap: 22px;
-            align-items: start
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 1000px) {
+        .command {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .sidebar {
+          position: relative;
+          width: 100%;
+          height: auto;
         }
 
-        .sim-chart {
-            height: 310px;
-            position: relative;
-            margin-top: 20px
+        .sidebar nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .sim-chart canvas {
-            width: 100% !important;
-            height: 100% !important
+        .main-content {
+          margin-left: 0;
+          padding: 22px 18px;
+        }
+      }
+
+      @media (max-width: 550px) {
+        .sim-kpis,
+        .sidebar nav {
+          grid-template-columns: 1fr;
         }
 
-        .sim-alerts {
-            max-height: 330px;
-            overflow-y: auto;
-            margin-top: 16px
+        .sim-header,
+        .topbar {
+          flex-wrap: wrap;
         }
 
-        .sim-alert {
-            margin-bottom: 12px;
-            padding: 16px;
-            border-radius: 14px;
-            border: 1px solid #ffd0dc;
-            background: linear-gradient(135deg, #fff6f8, #ffe8ef)
+        .sim-speed {
+          margin-left: 0;
         }
 
-        .sim-alert strong {
-            color: #b42343
+        .sim-panel {
+          padding: 18px;
         }
 
-        .sim-alert p {
-            margin: 6px 0 0;
-            color: #6c7f99;
-            font-size: 12px
+        .command-copy {
+          padding: 23px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .holo-orbit,
+        .holo-core,
+        .sim-dot {
+          animation: none;
         }
 
-        .sim-empty {
-            padding: 22px;
-            color: #8aa0ba;
-            text-align: center
+        .sim-panel,
+        .sim-kpi {
+          transition: none;
         }
-
-        .sim-table-wrap {
-            overflow-x: auto;
-            margin-top: 18px
-        }
-
-        .sim-table {
-            width: 100%;
-            min-width: 650px;
-            border-collapse: collapse
-        }
-
-        .sim-table th {
-            padding: 15px;
-            text-align: left;
-            background: #e8f1ff;
-            color: #5574a7;
-            font-size: 12px
-        }
-
-        .sim-table td {
-            padding: 15px;
-            border-bottom: 1px solid #dce8f7;
-            font-size: 13px
-        }
-
-        .sim-table tbody tr:hover {
-            background: #eaf3ff99
-        }
-
-        .sim-label {
-            display: inline-block;
-            padding: 6px 11px;
-            border-radius: 20px;
-            font-weight: 750;
-            font-size: 11px
-        }
-
-        .sim-label.fraud {
-            color: #be2348;
-            background: #ffe8ee
-        }
-
-        .sim-label.safe {
-            color: #078467;
-            background: #dcfce7
-        }
-
-        .page-footer {
-            text-align: center;
-            padding-top: 12px;
-            color: var(--muted);
-            font-size: 12px
-        }
-
-        @media(max-width:1250px) {
-            .sim-kpis {
-                grid-template-columns: repeat(2, minmax(0, 1fr))
-            }
-
-            .sim-grid {
-                grid-template-columns: 1fr
-            }
-        }
-
-        @media(max-width:1000px) {
-            .command {
-                grid-template-columns: 1fr
-            }
-        }
-
-        @media(max-width:900px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto
-            }
-
-            .sidebar nav {
-                grid-template-columns: repeat(2, minmax(0, 1fr))
-            }
-
-            .main-content {
-                margin-left: 0;
-                padding: 22px 18px
-            }
-        }
-
-        @media(max-width:550px) {
-
-            .sim-kpis,
-            .sidebar nav {
-                grid-template-columns: 1fr
-            }
-
-            .sim-header,
-            .topbar {
-                flex-wrap: wrap
-            }
-
-            .sim-speed {
-                margin-left: 0
-            }
-
-            .sim-panel {
-                padding: 18px
-            }
-
-            .command-copy {
-                padding: 23px
-            }
-        }
-
-        @media(prefers-reduced-motion:reduce) {
-
-            .holo-orbit,
-            .holo-core,
-            .sim-dot {
-                animation: none
-            }
-
-            .sim-panel,
-            .sim-kpi {
-                transition: none
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-icon">🛡️</div>
-            <h1>Fraud<span>Guard</span> AI</h1>
-        </div>
-        <p class="subtitle">Intelligent Fraud Detection</p>
-        <nav aria-label="Main navigation">
-            <a href="/"><span class="nav-icon">⌂</span>Dashboard</a>
-            <a href="/analytics"><span class="nav-icon">▥</span>Fraud Analytics</a>
-            <a href="/cost-optimizer"><span class="nav-icon">◎</span>Cost Optimizer</a>
-            <a href="/pr-explorer"><span class="nav-icon">◉</span>PR Explorer</a>
-            <a href="/live-simulator" class="active" aria-current="page">
-                <span class="nav-icon">▶</span>Live Simulator
-            </a>
-            <a href="/investigation-queue">
-                <span class="nav-icon">▤</span>Investigation Queue
-            </a>
-            <a href="/drift-monitor"><span class="nav-icon">⌁</span>Drift Monitor</a>
-        </nav>
-        <div class="dataset-info">
-            <h3>📊 Dataset Information</h3>
-            <p>Credit Card Transactions</p>
-            <p>{{ "{:,}".format(stats.total) }} transactions</p>
-            <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
-            <p>{{ stats.fraud_rate }}% fraud rate</p>
-        </div>
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <h1>Fraud<span>Guard</span> AI</h1>
+      </div>
+      <p class="subtitle">Intelligent Fraud Detection</p>
+      <nav aria-label="Main navigation">
+        <a href="/"><span class="nav-icon">⌂</span>Dashboard</a>
+        <a href="/analytics"><span class="nav-icon">▥</span>Fraud Analytics</a>
+        <a href="/cost-optimizer"
+          ><span class="nav-icon">◎</span>Cost Optimizer</a
+        >
+        <a href="/pr-explorer"><span class="nav-icon">◉</span>PR Explorer</a>
+        <a href="/live-simulator" class="active" aria-current="page">
+          <span class="nav-icon">▶</span>Live Simulator
+        </a>
+        <a href="/investigation-queue">
+          <span class="nav-icon">▤</span>Investigation Queue
+        </a>
+        <a href="/drift-monitor"
+          ><span class="nav-icon">⌁</span>Drift Monitor</a
+        >
+      </nav>
+      <div class="dataset-info">
+        <h3>📊 Dataset Information</h3>
+        <p>Credit Card Transactions</p>
+        <p>{{ "{:,}".format(stats.total) }} transactions</p>
+        <p>{{ "{:,}".format(stats.fraud) }} fraud cases</p>
+        <p>{{ stats.fraud_rate }}% fraud rate</p>
+      </div>
     </aside>
 
     <main class="main-content">
-        <div class="topbar">
-            <div class="top-label">✦ Historical Transaction Replay System</div>
-            <div class="chip" id="dateDisplay">Live Simulator</div>
+      <div class="topbar">
+        <div class="top-label">✦ Historical Transaction Replay System</div>
+        <div class="chip" id="dateDisplay">Live Simulator</div>
+      </div>
+
+      <header class="sim-header">
+        <div>
+          <h1>Live Transaction Simulator</h1>
+          <p class="sim-muted">
+            Replay historical transactions and monitor actual fraud labels.
+          </p>
+        </div>
+        <span class="sim-pill">
+          <span class="sim-dot" id="statusDot"></span>
+          <span id="statusText" role="status">Ready</span>
+        </span>
+      </header>
+
+      <section class="command">
+        <div class="command-copy">
+          <div class="eyebrow">● TRANSACTION REPLAY INTELLIGENCE</div>
+          <h2>
+            Watch Transactions Flow.<br />
+            <span>Explore Historical Fraud.</span>
+          </h2>
+          <p>
+            Replay transactions from your dataset, inspect fraud labels, follow
+            cumulative activity, and explore transaction events through a
+            dynamic simulation interface.
+          </p>
+          <div class="command-tags">
+            <span>◈ Historical Replay</span>
+            <span>◎ Actual Fraud Labels</span>
+            <span>▥ Transaction Monitoring</span>
+          </div>
+        </div>
+        <div class="command-art">
+          <div class="holo-orbit"></div>
+          <div class="holo-orbit two"></div>
+          <div class="holo-core" aria-hidden="true">▶</div>
+          <div class="art-caption">● REPLAY ENGINE READY</div>
+        </div>
+      </section>
+
+      <section class="sim-panel">
+        <h3>Simulation Control Center</h3>
+        <p class="sim-muted">
+          Start, pause or reset the chronological transaction replay.
+        </p>
+        <div class="sim-controls">
+          <button type="button" class="sim-btn sim-start" id="startBtn">
+            ▶ Start Simulation
+          </button>
+          <button
+            type="button"
+            class="sim-btn sim-pause"
+            id="pauseBtn"
+            disabled
+          >
+            ⏸ Pause
+          </button>
+          <button type="button" class="sim-btn sim-reset" id="resetBtn">
+            ↺ Reset
+          </button>
+          <label class="sim-speed">
+            Replay Speed
+            <select id="speedSelect">
+              <option value="1200">Slow</option>
+              <option value="650" selected>Normal</option>
+              <option value="250">Fast</option>
+              <option value="80">Ultra Fast</option>
+            </select>
+          </label>
         </div>
 
-        <header class="sim-header">
-            <div>
-                <h1>Live Transaction Simulator</h1>
-                <p class="sim-muted">
-                    Replay historical transactions and monitor actual fraud labels.
-                </p>
-            </div>
-            <span class="sim-pill">
-                <span class="sim-dot" id="statusDot"></span>
-                <span id="statusText" role="status">Ready</span>
-            </span>
-        </header>
+        <div class="sim-note">
+          <strong>Simulation mode:</strong> Historical transaction replay with
+          trained-model inference. Fraud predictions and probabilities are
+          generated by the model; actual labels come from the dataset.
+        </div>
+      </section>
 
-        <section class="command">
-            <div class="command-copy">
-                <div class="eyebrow">● TRANSACTION REPLAY INTELLIGENCE</div>
-                <h2>Watch Transactions Flow.<br>
-                    <span>Explore Historical Fraud.</span>
-                </h2>
-                <p>
-                    Replay transactions from your dataset, inspect fraud labels,
-                    follow cumulative activity, and explore transaction events
-                    through a dynamic simulation interface.
-                </p>
-                <div class="command-tags">
-                    <span>◈ Historical Replay</span>
-                    <span>◎ Actual Fraud Labels</span>
-                    <span>▥ Transaction Monitoring</span>
-                </div>
-            </div>
-            <div class="command-art">
-                <div class="holo-orbit"></div>
-                <div class="holo-orbit two"></div>
-                <div class="holo-core" aria-hidden="true">▶</div>
-                <div class="art-caption">● REPLAY ENGINE READY</div>
-            </div>
-        </section>
+      <section class="sim-kpis">
+        <article class="sim-kpi">
+          <div class="sim-kpi-icon">▤</div>
+          <p>Processed Transactions</p>
+          <h2 id="processedCount">0</h2>
+          <small>Transactions replayed</small>
+        </article>
+        <article class="sim-kpi fraud">
+          <div class="sim-kpi-icon">⚑</div>
+          <p>Actual Fraud Cases</p>
+          <h2 id="fraudCount">0</h2>
+          <small>Class = 1</small>
+        </article>
+        <article class="sim-kpi safe">
+          <div class="sim-kpi-icon">✓</div>
+          <p>Legitimate Transactions</p>
+          <h2 id="safeCount">0</h2>
+          <small>Class = 0</small>
+        </article>
+        <article class="sim-kpi rate">
+          <div class="sim-kpi-icon">%</div>
+          <p>Observed Fraud Rate</p>
+          <h2 id="fraudRate">0.00%</h2>
+          <small>Fraud among replayed records</small>
+        </article>
+      </section>
 
-        <section class="sim-panel">
-            <h3>Simulation Control Center</h3>
-            <p class="sim-muted">
-                Start, pause or reset the chronological transaction replay.
-            </p>
-            <div class="sim-controls">
-                <button type="button" class="sim-btn sim-start" id="startBtn">
-                    ▶ Start Simulation
-                </button>
-                <button type="button" class="sim-btn sim-pause" id="pauseBtn" disabled>
-                    ⏸ Pause
-                </button>
-                <button type="button" class="sim-btn sim-reset" id="resetBtn">
-                    ↺ Reset
-                </button>
-                <label class="sim-speed">
-                    Replay Speed
-                    <select id="speedSelect">
-                        <option value="1200">Slow</option>
-                        <option value="650" selected>Normal</option>
-                        <option value="250">Fast</option>
-                        <option value="80">Ultra Fast</option>
-                    </select>
-                </label>
-            </div>
-            <div class="sim-note">
-                <strong>Simulation mode:</strong> Historical dataset replay.
-                Fraud indicators represent actual dataset labels
-                (Class = 1), not machine-learning model predictions.
-            </div>
-        </section>
+      <section class="sim-grid">
+        <article class="sim-panel">
+          <h3>Live Transaction Activity</h3>
+          <p class="sim-muted">
+            Running totals of replayed transactions and labeled fraud cases.
+          </p>
+          <div class="sim-chart">
+            <canvas
+              id="activityChart"
+              aria-label="Transaction activity chart"
+            ></canvas>
+          </div>
+        </article>
 
-        <section class="sim-kpis">
-            <article class="sim-kpi">
-                <div class="sim-kpi-icon">▤</div>
-                <p>Processed Transactions</p>
-                <h2 id="processedCount">0</h2>
-                <small>Transactions replayed</small>
-            </article>
-            <article class="sim-kpi fraud">
-                <div class="sim-kpi-icon">⚑</div>
-                <p>Actual Fraud Cases</p>
-                <h2 id="fraudCount">0</h2>
-                <small>Class = 1</small>
-            </article>
-            <article class="sim-kpi safe">
-                <div class="sim-kpi-icon">✓</div>
-                <p>Legitimate Transactions</p>
-                <h2 id="safeCount">0</h2>
-                <small>Class = 0</small>
-            </article>
-            <article class="sim-kpi rate">
-                <div class="sim-kpi-icon">%</div>
-                <p>Observed Fraud Rate</p>
-                <h2 id="fraudRate">0.00%</h2>
-                <small>Fraud among replayed records</small>
-            </article>
-        </section>
+        <article class="sim-panel">
+          <h3>Fraud Event Feed</h3>
+          <p class="sim-muted">
+            Transactions flagged as potentially fraudulent by the trained model
+            during historical replay.
+          </p>
+          <div id="alertFeed" class="sim-alerts" aria-live="polite">
+            <p class="sim-empty">Start simulation to replay transactions.</p>
+          </div>
+        </article>
+      </section>
 
-        <section class="sim-grid">
-            <article class="sim-panel">
-                <h3>Live Transaction Activity</h3>
-                <p class="sim-muted">
-                    Running totals of replayed transactions and labeled fraud cases.
-                </p>
-                <div class="sim-chart">
-                    <canvas id="activityChart" aria-label="Transaction activity chart"></canvas>
-                </div>
-            </article>
+      <section class="sim-panel">
+        <h3>Recent Transaction Queue</h3>
+        <p class="sim-muted">Latest 30 replayed transactions.</p>
+        <div class="sim-table-wrap">
+          <table class="sim-table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Time</th>
+                <th>Amount (USD)</th>
+                <th>Model Prediction</th>
+                <th>Fraud Probability</th>
+                <th>Actual Label</th>
+              </tr>
+            </thead>
+            <tbody id="transactionBody">
+              <tr>
+                <td colspan="6" class="sim-empty">
+                  No transactions processed yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-            <article class="sim-panel">
-                <h3>Fraud Event Feed</h3>
-                <p class="sim-muted">
-                    Historical fraud cases encountered from ground-truth labels.
-                </p>
-                <div id="alertFeed" class="sim-alerts" aria-live="polite">
-                    <p class="sim-empty">Start simulation to replay transactions.</p>
-                </div>
-            </article>
-        </section>
-
-        <section class="sim-panel">
-            <h3>Recent Transaction Queue</h3>
-            <p class="sim-muted">Latest 30 replayed transactions.</p>
-            <div class="sim-table-wrap">
-                <table class="sim-table">
-                    <thead>
-                        <tr>
-                            <th>Transaction ID</th>
-                            <th>Elapsed Time</th>
-                            <th>Amount</th>
-                            <th>Actual Label</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionBody">
-                        <tr>
-                            <td colspan="4" class="sim-empty">
-                                No transactions processed yet.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <footer class="page-footer">
-            FraudGuard AI · Historical Transaction Simulator
-        </footer>
+      <footer class="page-footer">
+        FraudGuard AI · Historical Transaction Simulator
+      </footer>
     </main>
 
     <script>
-        "use strict";
+      "use strict";
 
-        const API_URL = "/api/simulator/transactions";
-        let running = false, timer = null;
-        let offset = 0, total = 0, processed = 0, fraud = 0, safe = 0;
-        let queue = [], alerts = [], buffer = [];
-        let hasMore = true, loading = false, generation = 0;
+      const API_URL = "/api/simulator/transactions";
+      let running = false,
+        timer = null;
+      let offset = 0,
+        total = 0,
+        processed = 0,
+        fraud = 0,
+        safe = 0;
+      let queue = [],
+        alerts = [],
+        buffer = [];
+      let hasMore = true,
+        loading = false,
+        generation = 0;
 
-        const $ = id => document.getElementById(id);
-        const numberFormat = value => Number(value).toLocaleString("en-US");
+      const $ = (id) => document.getElementById(id);
+      const numberFormat = (value) => Number(value).toLocaleString("en-US");
 
-        $("dateDisplay").textContent = new Date().toLocaleDateString("en-US", {
-            year: "numeric", month: "short", day: "numeric"
-        });
+      $("dateDisplay").textContent = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
 
-        const chart = typeof Chart !== "undefined"
-            ? new Chart($("activityChart"), {
-                type: "line",
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: "Processed",
-                            data: [],
-                            borderColor: "#317cff",
-                            backgroundColor: "rgba(49,124,255,.09)",
-                            borderWidth: 3,
-                            tension: .25,
-                            pointRadius: 0
-                        },
-                        {
-                            label: "Actual Fraud",
-                            data: [],
-                            borderColor: "#ff456c",
-                            backgroundColor: "rgba(255,69,108,.07)",
-                            borderWidth: 3,
-                            tension: .25,
-                            pointRadius: 0
-                        }
-                    ]
+      const chart =
+        typeof Chart !== "undefined"
+          ? new Chart($("activityChart"), {
+              type: "line",
+              data: {
+                labels: [],
+                datasets: [
+                  {
+                    label: "Processed",
+                    data: [],
+                    borderColor: "#317cff",
+                    backgroundColor: "rgba(49,124,255,.09)",
+                    borderWidth: 3,
+                    tension: 0.25,
+                    pointRadius: 0,
+                  },
+                  {
+                    label: "Actual Fraud",
+                    data: [],
+                    borderColor: "#ff456c",
+                    backgroundColor: "rgba(255,69,108,.07)",
+                    borderWidth: 3,
+                    tension: 0.25,
+                    pointRadius: 0,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                  legend: { labels: { color: "#536b8a" } },
+                  tooltip: {
+                    backgroundColor: "#10234c",
+                    padding: 12,
+                  },
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: false,
-                    plugins: {
-                        legend: { labels: { color: "#536b8a" } },
-                        tooltip: {
-                            backgroundColor: "#10234c",
-                            padding: 12
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: "#6980a9" },
-                            grid: { color: "rgba(83,124,191,.13)" }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            ticks: { color: "#6980a9" },
-                            grid: { color: "rgba(83,124,191,.13)" }
-                        }
-                    }
-                }
-            }) : null;
+                scales: {
+                  x: {
+                    ticks: { color: "#6980a9" },
+                    grid: { color: "rgba(83,124,191,.13)" },
+                  },
+                  y: {
+                    beginAtZero: true,
+                    ticks: { color: "#6980a9" },
+                    grid: { color: "rgba(83,124,191,.13)" },
+                  },
+                },
+              },
+            })
+          : null;
 
-        function setStatus(message, active = false) {
-            $("statusText").textContent = message;
-            $("statusDot").classList.toggle("running", active);
+      function setStatus(message, active = false) {
+        $("statusText").textContent = message;
+        $("statusDot").classList.toggle("running", active);
+      }
+
+      function updateButtons() {
+        $("startBtn").disabled = running;
+        $("pauseBtn").disabled = !running;
+      }
+
+      function updateStats() {
+        $("processedCount").textContent = numberFormat(processed);
+        $("fraudCount").textContent = numberFormat(fraud);
+        $("safeCount").textContent = numberFormat(safe);
+        $("fraudRate").textContent = processed
+          ? ((fraud / processed) * 100).toFixed(2) + "%"
+          : "0.00%";
+      }
+
+      function updateChart() {
+        if (!chart) return;
+
+        chart.data.labels.push(processed);
+        chart.data.datasets[0].data.push(processed);
+        chart.data.datasets[1].data.push(fraud);
+
+        if (chart.data.labels.length > 60) {
+          chart.data.labels.shift();
+          chart.data.datasets.forEach((dataset) => dataset.data.shift());
+        }
+        chart.update("none");
+      }
+
+      function renderQueue() {
+        const body = $("transactionBody");
+        body.replaceChildren();
+
+        if (!queue.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.className = "sim-empty";
+          td.textContent = "No transactions processed yet.";
+          tr.appendChild(td);
+          body.appendChild(tr);
+          return;
         }
 
-        function updateButtons() {
-            $("startBtn").disabled = running;
-            $("pauseBtn").disabled = !running;
+        for (const tx of queue) {
+          const tr = document.createElement("tr");
+
+          const id = document.createElement("td");
+          id.textContent = "#" + tx.id;
+
+          const time = document.createElement("td");
+          time.textContent = Number(tx.time).toFixed(0) + " sec";
+
+          const amount = document.createElement("td");
+          amount.textContent = "$" + Number(tx.amount).toFixed(2);
+
+          // XGBoost prediction
+          const predictedCell = document.createElement("td");
+          const predictedLabel = document.createElement("span");
+          predictedLabel.className =
+            "sim-label " + (tx.predicted_class === 1 ? "fraud" : "safe");
+          predictedLabel.textContent = tx.predicted_label ?? "Unavailable";
+          predictedCell.appendChild(predictedLabel);
+
+          // Model-estimated fraud probability
+          const probabilityCell = document.createElement("td");
+          probabilityCell.textContent =
+            tx.fraud_probability != null
+              ? (Number(tx.fraud_probability) * 100).toFixed(2) + "%"
+              : "N/A";
+
+          // Actual dataset label
+          const actualCell = document.createElement("td");
+          const actualLabel = document.createElement("span");
+          actualLabel.className =
+            "sim-label " + (tx.actual_class === 1 ? "fraud" : "safe");
+          actualLabel.textContent =
+            tx.actual_label ?? (tx.actual_class === 1 ? "Fraud" : "Legitimate");
+          actualCell.appendChild(actualLabel);
+
+          tr.append(
+            id,
+            time,
+            amount,
+            predictedCell,
+            probabilityCell,
+            actualCell,
+          );
+
+          body.appendChild(tr);
+        }
+      }
+
+      function renderAlerts() {
+        const feed = $("alertFeed");
+        feed.replaceChildren();
+
+        if (!alerts.length) {
+          const empty = document.createElement("p");
+          empty.className = "sim-empty";
+          empty.textContent = "No model-flagged transactions yet.";
+          feed.appendChild(empty);
+          return;
         }
 
-        function updateStats() {
-            $("processedCount").textContent = numberFormat(processed);
-            $("fraudCount").textContent = numberFormat(fraud);
-            $("safeCount").textContent = numberFormat(safe);
-            $("fraudRate").textContent = processed
-                ? ((fraud / processed) * 100).toFixed(2) + "%"
-                : "0.00%";
+        for (const tx of alerts) {
+          const card = document.createElement("div");
+          card.className = "sim-alert";
+
+          const heading = document.createElement("strong");
+          heading.textContent = "⚑ Model-Flagged Transaction #" + tx.id;
+          const detail = document.createElement("p");
+          detail.textContent =
+            "Amount: $" +
+            Number(tx.amount).toFixed(2) +
+            " | Elapsed: " +
+            Number(tx.time).toFixed(0) +
+            " sec";
+
+          const result = document.createElement("p");
+          result.textContent =
+            "Predicted: " +
+            (tx.predicted_label ?? "Unavailable") +
+            " | Actual: " +
+            (tx.actual_label ?? "Unavailable") +
+            " | Fraud Probability: " +
+            (tx.fraud_probability != null
+              ? (Number(tx.fraud_probability) * 100).toFixed(2) + "%"
+              : "N/A") +
+            " | Result: " +
+            (tx.actual_class === 1 ? "True Positive" : "False Positive");
+
+          card.append(heading, detail, result);
+          feed.appendChild(card);
         }
+      }
 
-        function updateChart() {
-            if (!chart) return;
+      async function fetchBatch() {
+        if (loading || !hasMore) return;
 
-            chart.data.labels.push(processed);
-            chart.data.datasets[0].data.push(processed);
-            chart.data.datasets[1].data.push(fraud);
+        loading = true;
+        const requestGeneration = generation;
 
-            if (chart.data.labels.length > 60) {
-                chart.data.labels.shift();
-                chart.data.datasets.forEach(dataset => dataset.data.shift());
-            }
-            chart.update("none");
-        }
+        try {
+          const response = await fetch(
+            API_URL + "?offset=" + offset + "&limit=50",
+          );
 
-        function renderQueue() {
-            const body = $("transactionBody");
-            body.replaceChildren();
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status);
+          }
 
-            if (!queue.length) {
-                const tr = document.createElement("tr");
-                const td = document.createElement("td");
-                td.colSpan = 4;
-                td.className = "sim-empty";
-                td.textContent = "No transactions processed yet.";
-                tr.appendChild(td);
-                body.appendChild(tr);
-                return;
-            }
+          const data = await response.json();
 
-            for (const tx of queue) {
-                const tr = document.createElement("tr");
+          // Ignore stale responses after Reset.
+          if (requestGeneration !== generation) return;
 
-                const id = document.createElement("td");
-                id.textContent = "#" + tx.id;
+          if (!Array.isArray(data.transactions)) {
+            throw new Error("Invalid transaction response");
+          }
 
-                const time = document.createElement("td");
-                time.textContent = Number(tx.time).toFixed(0) + " sec";
-
-                const amount = document.createElement("td");
-                amount.textContent = Number(tx.amount).toFixed(2);
-
-                const labelCell = document.createElement("td");
-                const label = document.createElement("span");
-                label.className = "sim-label " +
-                    (tx.actual_class === 1 ? "fraud" : "safe");
-                label.textContent = tx.actual_class === 1 ? "Fraud" : "Legitimate";
-
-                labelCell.appendChild(label);
-                tr.append(id, time, amount, labelCell);
-                body.appendChild(tr);
-            }
-        }
-
-        function renderAlerts() {
-            const feed = $("alertFeed");
-            feed.replaceChildren();
-
-            if (!alerts.length) {
-                const empty = document.createElement("p");
-                empty.className = "sim-empty";
-                empty.textContent = "No labeled fraud cases encountered yet.";
-                feed.appendChild(empty);
-                return;
-            }
-
-            for (const tx of alerts) {
-                const card = document.createElement("div");
-                card.className = "sim-alert";
-
-                const heading = document.createElement("strong");
-                heading.textContent = "⚑ Fraud Case #" + tx.id;
-
-                const detail = document.createElement("p");
-                detail.textContent =
-                    "Amount: " + Number(tx.amount).toFixed(2) +
-                    " | Elapsed: " + Number(tx.time).toFixed(0) + " sec";
-
-                card.append(heading, detail);
-                feed.appendChild(card);
-            }
-        }
-
-        async function fetchBatch() {
-            if (loading || !hasMore) return;
-
-            loading = true;
-            const requestGeneration = generation;
-
-            try {
-                const response = await fetch(
-                    API_URL + "?offset=" + offset + "&limit=50"
-                );
-
-                if (!response.ok) {
-                    throw new Error("HTTP " + response.status);
-                }
-
-                const data = await response.json();
-
-                // Ignore stale responses after Reset.
-                if (requestGeneration !== generation) return;
-
-                if (!Array.isArray(data.transactions)) {
-                    throw new Error("Invalid transaction response");
-                }
-
-                buffer.push(...data.transactions);
-                offset = data.next_offset;
-                total = data.total;
-                hasMore = data.has_more;
-
-            } catch (error) {
-                if (requestGeneration === generation) {
-                    pauseSimulation();
-                    setStatus("Data loading error");
-                    console.error(error);
-                }
-            } finally {
-                if (requestGeneration === generation) {
-                    loading = false;
-                }
-            }
-        }
-
-        function processTransaction(tx) {
-            processed++;
-
-            if (tx.actual_class === 1) {
-                fraud++;
-                alerts.unshift(tx);
-                alerts = alerts.slice(0, 10);
-                renderAlerts();
-            } else {
-                safe++;
-            }
-
-            queue.unshift(tx);
-            queue = queue.slice(0, 30);
-
-            updateStats();
-            renderQueue();
-
-            if (processed % 5 === 0) {
-                updateChart();
-            }
-        }
-
-        async function tick() {
-            if (!running) return;
-
-            if (buffer.length === 0) {
-                if (hasMore) {
-                    await fetchBatch();
-                }
-
-                if (!running) return;
-
-                if (buffer.length === 0 && !hasMore) {
-                    pauseSimulation();
-                    updateChart();
-                    setStatus("Replay complete");
-                    return;
-                }
-
-                // Avoid processing an empty buffer while another request is pending.
-                if (buffer.length === 0) {
-                    timer = setTimeout(tick, Number($("speedSelect").value));
-                    return;
-                }
-            }
-
-            const tx = buffer.shift();
-            if (tx) processTransaction(tx);
-
-            if (running) {
-                timer = setTimeout(tick, Number($("speedSelect").value));
-            }
-        }
-
-        function startSimulation() {
-            if (running) return;
-
-            if (!hasMore && buffer.length === 0) {
-                setStatus("Replay complete — reset to restart");
-                return;
-            }
-
-            running = true;
-            setStatus("Simulation running", true);
-            updateButtons();
-            tick();
-        }
-
-        function pauseSimulation() {
-            running = false;
-            clearTimeout(timer);
-            timer = null;
-
-            updateButtons();
-            updateChart();
-            setStatus("Paused");
-        }
-
-        function resetSimulation() {
-            running = false;
-            clearTimeout(timer);
-            timer = null;
-
-            generation++;
+          buffer.push(...data.transactions);
+          offset = data.next_offset;
+          total = data.total;
+          hasMore = data.has_more;
+        } catch (error) {
+          if (requestGeneration === generation) {
+            pauseSimulation();
+            setStatus("Data loading error");
+            console.error(error);
+          }
+        } finally {
+          if (requestGeneration === generation) {
             loading = false;
+          }
+        }
+      }
 
-            offset = 0;
-            total = 0;
-            processed = 0;
-            fraud = 0;
-            safe = 0;
+      function processTransaction(tx) {
+        processed++;
 
-            queue = [];
-            alerts = [];
-            buffer = [];
-            hasMore = true;
-
-            if (chart) {
-                chart.data.labels = [];
-                chart.data.datasets.forEach(dataset => {
-                    dataset.data = [];
-                });
-                chart.update();
-            }
-
-            updateStats();
-            renderQueue();
-            renderAlerts();
-            updateButtons();
-            setStatus("Ready");
+        // Count actual dataset labels for the KPI cards
+        if (tx.actual_class === 1) {
+          fraud++;
+        } else {
+          safe++;
         }
 
-        $("startBtn").addEventListener("click", startSimulation);
-        $("pauseBtn").addEventListener("click", pauseSimulation);
-        $("resetBtn").addEventListener("click", resetSimulation);
+        // Show transactions flagged by the model in the alert feed
+        if (tx.predicted_class === 1) {
+          alerts.unshift(tx);
+          alerts = alerts.slice(0, 10);
+          renderAlerts();
+        }
 
-        resetSimulation();
+        queue.unshift(tx);
+        queue = queue.slice(0, 30);
+
+        updateStats();
+        renderQueue();
+
+        if (processed % 5 === 0) {
+          updateChart();
+        }
+      }
+
+      async function tick() {
+        if (!running) return;
+
+        if (buffer.length === 0) {
+          if (hasMore) {
+            await fetchBatch();
+          }
+
+          if (!running) return;
+
+          if (buffer.length === 0 && !hasMore) {
+            pauseSimulation();
+            updateChart();
+            setStatus("Replay complete");
+            return;
+          }
+
+          // Avoid processing an empty buffer while another request is pending.
+          if (buffer.length === 0) {
+            timer = setTimeout(tick, Number($("speedSelect").value));
+            return;
+          }
+        }
+
+        const tx = buffer.shift();
+        if (tx) processTransaction(tx);
+
+        if (running) {
+          timer = setTimeout(tick, Number($("speedSelect").value));
+        }
+      }
+
+      function startSimulation() {
+        if (running) return;
+
+        if (!hasMore && buffer.length === 0) {
+          setStatus("Replay complete — reset to restart");
+          return;
+        }
+
+        running = true;
+        setStatus("Simulation running", true);
+        updateButtons();
+        tick();
+      }
+
+      function pauseSimulation() {
+        running = false;
+        clearTimeout(timer);
+        timer = null;
+
+        updateButtons();
+        updateChart();
+        setStatus("Paused");
+      }
+
+      function resetSimulation() {
+        running = false;
+        clearTimeout(timer);
+        timer = null;
+
+        generation++;
+        loading = false;
+
+        offset = 0;
+        total = 0;
+        processed = 0;
+        fraud = 0;
+        safe = 0;
+
+        queue = [];
+        alerts = [];
+        buffer = [];
+        hasMore = true;
+
+        if (chart) {
+          chart.data.labels = [];
+          chart.data.datasets.forEach((dataset) => {
+            dataset.data = [];
+          });
+          chart.update();
+        }
+
+        updateStats();
+        renderQueue();
+        renderAlerts();
+        updateButtons();
+        setStatus("Ready");
+      }
+
+      $("startBtn").addEventListener("click", startSimulation);
+      $("pauseBtn").addEventListener("click", pauseSimulation);
+      $("resetBtn").addEventListener("click", resetSimulation);
+
+      resetSimulation();
     </script>
-</body>
-
+  </body>
 </html>
